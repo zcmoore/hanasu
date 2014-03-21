@@ -69,6 +69,12 @@ public class AESBlock
 		}
 	}
 	
+	public AESBlock(AESBlockType blockType)
+			throws InvalidBlockSizeException
+	{
+		this(new byte[0], blockType);
+	}
+	
 	public byte[][] getData()
 	{
 		return data;
@@ -108,17 +114,52 @@ public class AESBlock
 		for (int wordIndex = 0; wordIndex < blockType.numberOfRows(); wordIndex++)
 		{
 			byte[] word = getWord(wordIndex);
-			Blocks.shiftWord(word, wordIndex);
+			Blocks.shiftWordLeft(word, wordIndex);
 		}
 	}
 	
 	public void mixColumns()
 	{
-		// TODO: implement
-		throw new NotImplementedException();
+		if (this.blockType != AESBlockType.BIT_128)
+		{
+			// TODO: add support for 192 and 256-bit AES
+			throw new NotImplementedException();
+		}
+		
+		int numColumns = blockType.numberOfColumns();
+		int numRows = blockType.numberOfRows();
+		for (int column = 0; column < numColumns; column++)
+		{
+			byte[] mixedColumn = new byte[numColumns];
+			for (int row = 0; row < numRows; row++)
+			{
+				int nextRow = (row + 1) % numRows;
+				int row2 = (row + 2) % numRows;
+				int row3 = (row + 3) % numRows;
+				
+				byte mixedValue;
+				byte intermediateValue;
+				
+				// @formatter:off
+				mixedValue = RijndaelField.multiply((byte) 2, data[row][column]);
+				
+				intermediateValue = RijndaelField.multiply((byte) 3, data[nextRow][column]);
+				mixedValue = RijndaelField.add(mixedValue, intermediateValue);
+				
+				mixedValue = RijndaelField.add(mixedValue, data[row2][column]);
+				mixedValue = RijndaelField.add(mixedValue, data[row3][column]);
+				// @formatter:on
+			}
+			
+			// Copy mixedColumn into data column
+			for (int row = 0; row < numRows; row++)
+			{
+				data[row][column] = mixedColumn[row];
+			}
+		}
 	}
 	
-	public void addRoundKey()
+	public void addRoundKey(AESBlock roundKey)
 	{
 		// TODO: implement
 		throw new NotImplementedException();

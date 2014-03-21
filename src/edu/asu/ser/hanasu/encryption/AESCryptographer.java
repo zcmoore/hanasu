@@ -1,12 +1,15 @@
 package edu.asu.ser.hanasu.encryption;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Object used to encrypt and decrypt data, using AES encryption.
  * 
  * @author Moore, Zachary
- *
+ * 
  */
 public class AESCryptographer
 {
@@ -29,21 +32,16 @@ public class AESCryptographer
 	 * Keys to encrypt and decrypt data. This is the expanded key; the base key
 	 * is included in this array, at index 0
 	 */
-	private AESBlock[] key;
+	private final AESBlock[] key;
 	
 	public AESCryptographer(byte[] key, AESBlockType blockSize)
 			throws InvalidBlockSizeException
 	{
-		this(blockSize, AESBlockType.getType(key.length));
+		this.blockType = blockSize;
+		this.keyType = AESBlockType.getType(key.length);
 		
 		AESBlock baseKey = new AESBlock(key, keyType);
 		this.key = expandKey(baseKey);
-	}
-	
-	private AESCryptographer(AESBlockType blockSize, AESBlockType keySize)
-	{
-		this.blockType = blockSize;
-		this.keyType = keySize;
 	}
 	
 	public static SBox obtainSBox()
@@ -59,7 +57,54 @@ public class AESCryptographer
 	
 	public byte[] encrypt(byte[] data)
 	{
-		// TODO: implement
+		try
+		{
+			ArrayList<AESBlock> dataBlocks = new ArrayList<>();
+			int index = 0;
+			
+			// Divide data into blocks for processing
+			while (index < data.length)
+			{
+				int length = blockType.numberOfBytes;
+				int remainingData = data.length - index;
+				length = (remainingData < length) ? remainingData : length;
+				byte[] dataSection = new byte[length];
+				System.arraycopy(data, index, dataSection, 0, length);
+				
+				AESBlock dataBlock = new AESBlock(dataSection, blockType);
+				dataBlocks.add(dataBlock);
+				index += length;
+			}
+			
+			for (int round = 1; round < key.length; round++)
+			{
+				if (round != key.length - 1)
+				{
+					for (AESBlock block : dataBlocks)
+					{
+						block.substituteBytes();
+						block.shiftRows();
+						block.mixColumns();
+						block.addRoundKey(key[round]);
+					}
+				}
+				else
+				{
+					for (AESBlock block : dataBlocks)
+					{
+						block.substituteBytes();
+						block.shiftRows();
+						block.addRoundKey(key[round]);
+					}
+				}	
+			}
+		}
+		catch (InvalidBlockSizeException e)
+		{
+			e.printStackTrace();
+		}
+		
+		// TODO: convert dataBlocks to byte[]
 		throw new NotImplementedException();
 	}
 	
@@ -75,10 +120,66 @@ public class AESCryptographer
 		throw new NotImplementedException();
 	}
 	
-	private AESBlock[] expandKey(AESBlock key)
+	private AESBlock[] expandKey(AESBlock key) throws InvalidBlockSizeException
 	{
-		// TODO: implement
-		throw new NotImplementedException();
+		int numberOfRounds = Math.max(keyType.wordCount(),
+				blockType.wordCount()) + 6;
+		AESBlock[] expandedKey = new AESBlock[numberOfRounds + 1];
+		expandedKey[0] = key;
+		
+		for (int roundIndex = 1; roundIndex <= numberOfRounds; roundIndex++)
+		{
+			AESBlock previousBlock = expandedKey[roundIndex - 1];
+			expandedKey[roundIndex] = new AESBlock(keyType);
+			
+			byte[][] currentBlock = expandedKey[roundIndex].getData();
+			
+			// Handle the first word separately
+			byte relevantRoundConstant = getRelevantRoundConstant(roundIndex);
+			byte[] grounInput = previousBlock.getWord(keyType.wordLength() - 1);
+			byte[] groundWord = funtionG(grounInput, relevantRoundConstant);
+			currentBlock[0] = Blocks.xor(previousBlock.getWord(0), groundWord);
+			
+			for (int word = 1; word < keyType.wordCount(); word++)
+			{
+				currentBlock[word] = Blocks.xor(currentBlock[word - 1], previousBlock.getWord(word));
+			}
+		}
+		
+		return expandedKey;
+	}
+	
+	private byte[] funtionG(byte[] word, byte relevantRoundConstant)
+	{
+		// Work on a copy - do not alter the provided array
+		byte[] result = Arrays.copyOf(word, blockType.wordLength());
+		
+		// Shift left 1
+		Blocks.shiftWordLeft(result, 1);
+		
+		// Substitute bytes
+		for (int index = 0; index < result.length; index++)
+		{
+			result[index] = sBox.substitute(result[index]);
+		}
+		
+		// Add RoundConstant
+		result[0] ^= relevantRoundConstant;
+		
+		return result;
+	}
+	
+	private byte getRelevantRoundConstant(int roundIndex)
+	{
+		byte result = 1;
+		
+		// RoundKey[i] = 2 * RoundKey[i - 1]
+		for (int index = 1; index < roundIndex; index++)
+		{
+			result = RijndaelField.multiply(2, result);
+		}
+		
+		return result;
 	}
 	
 }
