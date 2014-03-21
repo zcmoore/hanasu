@@ -1,6 +1,6 @@
 package edu.asu.ser.hanasu.encryption;
 
-public enum AESBlockType
+enum AESBlockType
 {
 	// TODO extend support to 192 and 256-bit AES
 	BIT_128(16);
