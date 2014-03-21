@@ -2,6 +2,12 @@ package edu.asu.ser.hanasu.encryption;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+/**
+ * Object used to encrypt and decrypt data, using AES encryption.
+ * 
+ * @author Moore, Zachary
+ *
+ */
 public class AESCryptographer
 {
 	/** Used for substituting bytes during the diffusion process in each round */
@@ -64,7 +70,7 @@ public class AESCryptographer
 		 */
 		public AESBlock(byte[] data) throws InvalidBlockSizeException
 		{
-			// Ensure data is not too large
+			// Ensure data is not too large to fit in a single block
 			if (data.length > blockType.numberOfBytes)
 			{
 				throw new InvalidBlockSizeException("Block is too large");
@@ -110,22 +116,62 @@ public class AESCryptographer
 		
 		public void substituteBytes()
 		{
-			
+			// Replace all values in data[][] with their SBox substitution
+			for (int row = 0; row < blockType.numberOfRows(); row++)
+			{
+				for (int column = 0; column < blockType.numberOfColumns(); column++)
+				{
+					byte rawData = data[row][column];
+					data[row][column] = sBox.substitute(rawData);
+				}
+			}
 		}
 		
 		public void shiftRows()
 		{
-			
+			// Shift all words in this block by an amount equal to their index
+			for (int wordIndex = 0; wordIndex < blockType.numberOfRows(); wordIndex++)
+			{
+				byte[] word = getWord(wordIndex);
+				shiftWord(word, wordIndex);
+			}
+		}
+		
+		private void shiftWord(byte[] word, int amount)
+		{
+			// Throws NullPointerException if word is null
+			// If word.length is 0, shifting is complete
+			if (word.length == 0)
+			{
+				return;
+			}
+			else
+			{
+				// TODO optimize - remove loop
+				for (; amount > 0; amount--)
+				{
+					// Save the first entry
+					byte firstEntry = word[0];
+					
+					// Shift left by 1
+					System.arraycopy(word, 1, word, 0, word.length - 1);
+					
+					// Wrap the first entry
+					word[word.length - 1] = firstEntry;
+				}
+			}
 		}
 		
 		public void mixColumns()
 		{
-			
+			// TODO: implement
+			throw new NotImplementedException();
 		}
 		
 		public void addRoundKey()
 		{
-			
+			// TODO: implement
+			throw new NotImplementedException();
 		}
 	}
 	
@@ -146,31 +192,37 @@ public class AESCryptographer
 	
 	public static SBox obtainSBox()
 	{
+		// TODO: implement
 		throw new NotImplementedException();
 	}
 	
 	public byte[] encrypt(String message)
 	{
+		// TODO: implement
 		throw new NotImplementedException();
 	}
 	
 	public byte[] encrypt(byte[] data)
 	{
+		// TODO: implement
 		throw new NotImplementedException();
 	}
 	
 	public String decrypt(byte[] data)
 	{
+		// TODO: implement
 		throw new NotImplementedException();
 	}
 	
 	public String decrypt(AESBlock data)
 	{
+		// TODO: implement
 		throw new NotImplementedException();
 	}
 	
 	private AESBlock[] expandKey(AESBlock key)
 	{
+		// TODO: implement
 		throw new NotImplementedException();
 	}
 	

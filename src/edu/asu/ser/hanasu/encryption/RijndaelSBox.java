@@ -4,6 +4,10 @@ public class RijndaelSBox extends SBox
 {
 	public RijndaelSBox()
 	{
+		// Initializes boxValues[] to a new array of size 256 (guaranteed by
+		// SBox)
+		super();
+		
 		// @formatter:off
 		int[] intValues = new int[]
 		  {0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -25,7 +29,8 @@ public class RijndaelSBox extends SBox
 		  };
 		// @formatter:on
 		
-		this.boxValues = new byte[intValues.length];
+		// Cast all values listed in intValues to (byte) and add them to
+		// boxValues at the appropriate index
 		for (int index = 0; index < intValues.length; index++)
 		{
 			this.boxValues[index] = (byte) intValues[index];
