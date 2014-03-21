@@ -140,25 +140,22 @@ public class AESCryptographer
 		private void shiftWord(byte[] word, int amount)
 		{
 			// Throws NullPointerException if word is null
-			// If word.length is 0, shifting is complete
-			if (word.length == 0)
+			// If word.length is 0 or 1, shifting is complete
+			if (word.length <= 1)
 			{
 				return;
 			}
 			else
 			{
-				// TODO optimize - remove loop
-				for (; amount > 0; amount--)
-				{
-					// Save the first entry
-					byte firstEntry = word[0];
-					
-					// Shift left by 1
-					System.arraycopy(word, 1, word, 0, word.length - 1);
-					
-					// Wrap the first entry
-					word[word.length - 1] = firstEntry;
-				}
+				// Determine the first [amount] entries
+				byte[] circularEntries = new byte[amount];
+				System.arraycopy(word, 0, circularEntries, 0, amount);
+				
+				// Shift left by amount
+				System.arraycopy(word, amount, word, 0, word.length - 1);
+				
+				// Wrap the first entries
+				System.arraycopy(circularEntries, 0, word, amount + 1, amount);
 			}
 		}
 		
@@ -192,8 +189,7 @@ public class AESCryptographer
 	
 	public static SBox obtainSBox()
 	{
-		// TODO: implement
-		throw new NotImplementedException();
+		return new RijndaelSBox();
 	}
 	
 	public byte[] encrypt(String message)

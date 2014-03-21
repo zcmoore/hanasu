@@ -33,7 +33,7 @@ public abstract class SBox
 		throw new NotImplementedException();
 	}
 	
-	public static SBox generateSBox(GaloisField galoisField)
+	public static SBox generateSBox(RijndaelField galoisField)
 	{
 		throw new NotImplementedException();
 	}
