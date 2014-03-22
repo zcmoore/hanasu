@@ -39,6 +39,8 @@ public class AESBlock
 	 * @param data
 	 *            The data to store in this block, as a byte[]
 	 * @throws InvalidBlockSizeException
+	 *             Indicates that the data cannot fit into a block of the given
+	 *             type/size
 	 */
 	public AESBlock(byte[] data, AESBlockType blockType)
 			throws InvalidBlockSizeException
@@ -69,8 +71,7 @@ public class AESBlock
 		}
 	}
 	
-	public AESBlock(AESBlockType blockType)
-			throws InvalidBlockSizeException
+	public AESBlock(AESBlockType blockType) throws InvalidBlockSizeException
 	{
 		this(new byte[0], blockType);
 	}
@@ -159,9 +160,43 @@ public class AESBlock
 		}
 	}
 	
+	public byte[] toByteArray()
+	{
+		byte[] data = new byte[blockType.numberOfBytes];
+		
+		int numRows = blockType.numberOfRows();
+		int numColumns = blockType.numberOfColumns();
+		
+		// Move data from byte[][] into byte[], top to bottom, L to R
+		for (int column = 0, index = 0; column < numColumns; column++)
+		{
+			for (int row = 0; row < numRows; row++, index++)
+			{
+				if (index < data.length)
+					data[index] = this.data[row][column];
+				else
+					break;
+			}
+		}
+		
+		return data;
+	}
+	
 	public void addRoundKey(AESBlock roundKey)
 	{
-		// TODO: implement
-		throw new NotImplementedException();
+		if (this.blockType != AESBlockType.BIT_128)
+		{
+			// TODO: add support for 192 and 256-bit AES
+			throw new NotImplementedException();
+		}
+		
+		byte[][] roundKeyArray = roundKey.getData();
+		for (int row = 0; row < roundKeyArray.length; row++)
+		{
+			for (int column = 0; column < roundKeyArray[0].length; column++)
+			{
+				data[row][column] ^= roundKeyArray[row][column];
+			}
+		}
 	}
 }

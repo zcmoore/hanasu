@@ -13,15 +13,29 @@ public class Blocks
 		else
 		{
 			// Determine the first [amount] entries
-			byte[] circularEntries = new byte[amount];
-			System.arraycopy(word, 0, circularEntries, 0, amount);
+			byte[] firstEntries = new byte[amount];
+			System.arraycopy(word, 0, firstEntries, 0, amount);
 			
 			// Shift left by amount
-			System.arraycopy(word, amount, word, 0, word.length - 1);
+			System.arraycopy(word, amount, word, 0, word.length - amount);
 			
 			// Wrap the first entries
-			System.arraycopy(circularEntries, 0, word, amount + 1, amount);
+			System.arraycopy(firstEntries, 0, word, word.length - amount,
+					amount);
 		}
+	}
+	
+	public static byte[] convertStringToByteArray(String message)
+	{
+		char[] characters = message.toCharArray();
+		byte[] bytes = new byte[characters.length];
+		
+		for (int index = 0; index < bytes.length; index++)
+		{
+			bytes[index] = (byte) characters[index];
+		}
+		
+		return bytes;
 	}
 	
 	public static byte[] xor(byte[] word1, byte[] word2)

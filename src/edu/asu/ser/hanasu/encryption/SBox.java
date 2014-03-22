@@ -50,7 +50,10 @@ public abstract class SBox
 	
 	public byte substitute(byte inputByte)
 	{
-		return boxValues[inputByte];
+		System.out.println("byte: " + Integer.toBinaryString(((int) inputByte)));
+		System.out.println(Integer.toBinaryString(((int) inputByte) & 0xFF));
+		System.out.println();
+		return boxValues[(((int) inputByte) & 0xFF)];
 	}
 	
 	public byte substitute(char inputByte)
