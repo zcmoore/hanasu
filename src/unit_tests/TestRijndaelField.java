@@ -30,6 +30,7 @@ public class TestRijndaelField
 	@Test
 	public void testAddition()
 	{
+		
 		byte augend = 10;
 		byte addend = 1;
 		
