@@ -14,6 +14,12 @@ public abstract class SBox
 	protected final byte[] boxValues;
 	
 	/**
+	 * Inverse of this box, used for inverse substitution. The size of
+	 * inverseValues will always be the size of {@link #boxValues}
+	 */
+	protected final byte[] inverseValues;
+	
+	/**
 	 * Base constructor for all SBox implementations. Ensures the size of
 	 * boxValues is appropriate (256). The size of boxValues cannot be altered.
 	 */
@@ -21,6 +27,7 @@ public abstract class SBox
 	{
 		// Box must have a substitution value for each value of a byte
 		boxValues = new byte[16 * 16];
+		inverseValues = new byte[boxValues.length];
 	}
 	
 	public static SBox loadSBox(URL filePath)
@@ -50,14 +57,21 @@ public abstract class SBox
 	
 	public byte substitute(byte inputByte)
 	{
-		System.out.println("byte: " + Integer.toBinaryString(((int) inputByte)));
-		System.out.println(Integer.toBinaryString(((int) inputByte) & 0xFF));
-		System.out.println();
 		return boxValues[(((int) inputByte) & 0xFF)];
 	}
 	
 	public byte substitute(char inputByte)
 	{
 		return substitute((byte) inputByte);
+	}
+	
+	public byte invert(byte inputByte)
+	{
+		return inverseValues[(((int) inputByte) & 0xFF)];
+	}
+	
+	public byte invert(char inputByte)
+	{
+		return invert((byte) inputByte);
 	}
 }
