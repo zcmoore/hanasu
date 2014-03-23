@@ -181,29 +181,30 @@ public class AESCryptographer
 				index += length;
 			}
 			
-			// Add last round key
+			// Process first round without mixColumns
 			for (AESBlock block : dataBlocks)
 			{
 				block.addRoundKey(key[key.length - 1]);
+				block.inverseShiftRows();
+				block.invertBytes();
 			}
 			
 			// Process each block until all keys are used
 			// Process keys backwards
-			for (int round = key.length - 2; round >= 0; round--)
+			for (int round = key.length - 2; round >= 1; round--)
 			{
 				for (AESBlock block : dataBlocks)
 				{
-					block.inverseShiftRows();
-					block.invertBytes();
 					block.addRoundKey(key[round]);
 					block.inverseMixColumns();
+					block.inverseShiftRows();
+					block.invertBytes();
 				}
 			}
 			
+			// Add first round key
 			for (AESBlock block : dataBlocks)
 			{
-				block.inverseShiftRows();
-				block.invertBytes();
 				block.addRoundKey(key[0]);
 			}
 			

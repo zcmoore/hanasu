@@ -154,7 +154,7 @@ public class AESBlock
 		int numRows = blockType.numberOfRows();
 		for (int column = 0; column < numColumns; column++)
 		{
-			byte[] mixedColumn = new byte[numColumns];
+			byte[] mixedColumn = new byte[numRows];
 			for (int row = 0; row < numRows; row++)
 			{
 				int nextRow = (row + 1) % numRows;
@@ -165,9 +165,9 @@ public class AESBlock
 				byte intermediateValue;
 				
 				// @formatter:off
-				mixedValue = RijndaelField.multiply((byte) 2, data[row][column]);
+				mixedValue = RijndaelField.multiply(data[row][column], 2);
 				
-				intermediateValue = RijndaelField.multiply((byte) 3, data[nextRow][column]);
+				intermediateValue = RijndaelField.multiply(data[nextRow][column], 3);
 				mixedValue = RijndaelField.add(mixedValue, intermediateValue);
 				
 				mixedValue = RijndaelField.add(mixedValue, data[row2][column]);
@@ -197,7 +197,7 @@ public class AESBlock
 		int numRows = blockType.numberOfRows();
 		for (int column = 0; column < numColumns; column++)
 		{
-			byte[] mixedColumn = new byte[numColumns];
+			byte[] mixedColumn = new byte[numRows];
 			for (int row = 0; row < numRows; row++)
 			{
 				int nextRow = (row + 1) % numRows;
@@ -208,15 +208,15 @@ public class AESBlock
 				byte intermediateValue;
 				
 				// @formatter:off
-				mixedValue = RijndaelField.multiply((byte) 0x0E, data[row][column]);
+				mixedValue = RijndaelField.multiply(0x0E, data[row][column]);
 				
-				intermediateValue = RijndaelField.multiply((byte) 0x0B, data[nextRow][column]);
+				intermediateValue = RijndaelField.multiply(0x0B, data[nextRow][column]);
 				mixedValue = RijndaelField.add(mixedValue, intermediateValue);
 
-				intermediateValue = RijndaelField.multiply((byte) 0x0D, data[row2][column]);
+				intermediateValue = RijndaelField.multiply(0x0D, data[row2][column]);
 				mixedValue = RijndaelField.add(mixedValue, intermediateValue);
 
-				intermediateValue = RijndaelField.multiply((byte) 0x09, data[row3][column]);
+				intermediateValue = RijndaelField.multiply(0x09, data[row3][column]);
 				mixedValue = RijndaelField.add(mixedValue, intermediateValue);
 				// @formatter:on
 				
