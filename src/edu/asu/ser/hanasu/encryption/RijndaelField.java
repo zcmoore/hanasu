@@ -28,7 +28,7 @@ public class RijndaelField
 		
 		for (int position = 1; position < 8; position++)
 		{
-			boolean relevantBit = (byte2 >> position) == 1;
+			boolean relevantBit = ((byte2 >> position) & 1) == 1;
 			
 			if (relevantBit)
 			{
