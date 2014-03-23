@@ -4,12 +4,14 @@ import java.util.Arrays;
 
 import edu.asu.ser.hanasu.encryption.AESBlock;
 import edu.asu.ser.hanasu.encryption.AESBlockType;
+import edu.asu.ser.hanasu.encryption.AESCryptographer;
+import edu.asu.ser.hanasu.encryption.Blocks;
 import edu.asu.ser.hanasu.encryption.InvalidBlockSizeException;
 
 public class Main
 {
 	public static void main(String[] args) throws InvalidBlockSizeException
-	{/*
+	{
 		// byte[] testKey = Blocks.convertStringToByteArray("test key 16bytes");
 		byte[] testKey = new byte[]{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 		//byte[] testData = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
@@ -20,9 +22,9 @@ public class Main
 		System.out.println(Arrays.toString(encrypted));
 		
 		String decrypted = cryptographer.decrypt(encrypted);
-		System.out.println(decrypted);*/
+		System.out.println(decrypted);
 		
-		byte[] testData = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+		byte[] testData = Blocks.convertStringToByteArray("this is a test");
 		AESBlock testBlock = new AESBlock(testData, AESBlockType.BIT_128);
 		
 		System.out.println(Arrays.toString(testBlock.toByteArray()));
@@ -44,5 +46,13 @@ public class Main
 		
 		testBlock.inverseMixColumns();
 		System.out.println(Arrays.toString(testBlock.toByteArray()));
+		
+		System.out.println("\n\n");
+		
+		
+		testBlock = new AESBlock(testData, AESBlockType.BIT_128);
+		System.out.println(Arrays.toString(testBlock.toByteArray()));
+		
+		
 	}
 }
