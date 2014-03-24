@@ -71,6 +71,15 @@ public class AESBlock
 		}
 	}
 	
+	/**
+	 * Creates an empty AESBlock of the specified type.
+	 * 
+	 * @param blockType
+	 *            The type of block to be created.
+	 * @throws InvalidBlockSizeException
+	 *             Indicates that the data cannot fit into a block of the given
+	 *             type/size
+	 */
 	public AESBlock(AESBlockType blockType) throws InvalidBlockSizeException
 	{
 		this(new byte[0], blockType);
@@ -96,6 +105,12 @@ public class AESBlock
 		return data[index];
 	}
 	
+	/**
+	 * Replaces all bytes currently held in this AESBlock with their
+	 * corresponding values specified by {@link AESCryptographer#sBox}
+	 * 
+	 * @see SBox#substitute(byte)
+	 */
 	public void substituteBytes()
 	{
 		// Replace all values in data[][] with their SBox substitution
@@ -109,6 +124,12 @@ public class AESBlock
 		}
 	}
 	
+	/**
+	 * Replaces all bytes currently held in this AESBlock with their
+	 * corresponding inverse values specified by {@link AESCryptographer#sBox}
+	 * 
+	 * @see SBox#invert(byte)
+	 */
 	public void invertBytes()
 	{
 		// Replace all values in data[][] with their SBox inverse
@@ -122,6 +143,13 @@ public class AESBlock
 		}
 	}
 	
+	/**
+	 * Confuse the data in this block by shifting all rows to the left by an
+	 * amount equal to the row index of each row. That is, row 0 will be shifted
+	 * by an amount of 0, row one will be shifted left by a value of 1, etc.
+	 * 
+	 * @see Blocks#shiftWordLeft(byte[], int)
+	 */
 	public void shiftRows()
 	{
 		// Shift all words in this block by an amount equal to their index
@@ -132,6 +160,14 @@ public class AESBlock
 		}
 	}
 	
+	/**
+	 * Undo the confusion caused by {@link #shiftRows()} by shifting all rows to
+	 * the right by an amount equal to the row index of each row. That is, row 0
+	 * will be shifted by an amount of 0, row one will be shifted right by a
+	 * value of 1, etc.
+	 * 
+	 * @see Blocks#shiftWordRight(byte[], int)
+	 */
 	public void inverseShiftRows()
 	{
 		// Shift all words in this block by an amount equal to their index
@@ -154,7 +190,7 @@ public class AESBlock
 		int numRows = blockType.numberOfRows();
 		for (int column = 0; column < numColumns; column++)
 		{
-			byte[] mixedColumn = new byte[numColumns];
+			byte[] mixedColumn = new byte[numRows];
 			for (int row = 0; row < numRows; row++)
 			{
 				int nextRow = (row + 1) % numRows;
@@ -165,9 +201,9 @@ public class AESBlock
 				byte intermediateValue;
 				
 				// @formatter:off
-				mixedValue = RijndaelField.multiply((byte) 2, data[row][column]);
+				mixedValue = RijndaelField.multiply(data[row][column], 0x02);
 				
-				intermediateValue = RijndaelField.multiply((byte) 3, data[nextRow][column]);
+				intermediateValue = RijndaelField.multiply(data[nextRow][column], 0x03);
 				mixedValue = RijndaelField.add(mixedValue, intermediateValue);
 				
 				mixedValue = RijndaelField.add(mixedValue, data[row2][column]);
@@ -197,7 +233,7 @@ public class AESBlock
 		int numRows = blockType.numberOfRows();
 		for (int column = 0; column < numColumns; column++)
 		{
-			byte[] mixedColumn = new byte[numColumns];
+			byte[] mixedColumn = new byte[numRows];
 			for (int row = 0; row < numRows; row++)
 			{
 				int nextRow = (row + 1) % numRows;
@@ -208,15 +244,15 @@ public class AESBlock
 				byte intermediateValue;
 				
 				// @formatter:off
-				mixedValue = RijndaelField.multiply((byte) 0x0E, data[row][column]);
+				mixedValue = RijndaelField.multiply(0x0E, data[row][column]);
 				
-				intermediateValue = RijndaelField.multiply((byte) 0x0B, data[nextRow][column]);
+				intermediateValue = RijndaelField.multiply(0x0B, data[nextRow][column]);
 				mixedValue = RijndaelField.add(mixedValue, intermediateValue);
 
-				intermediateValue = RijndaelField.multiply((byte) 0x0D, data[row2][column]);
+				intermediateValue = RijndaelField.multiply(0x0D, data[row2][column]);
 				mixedValue = RijndaelField.add(mixedValue, intermediateValue);
 
-				intermediateValue = RijndaelField.multiply((byte) 0x09, data[row3][column]);
+				intermediateValue = RijndaelField.multiply(0x09, data[row3][column]);
 				mixedValue = RijndaelField.add(mixedValue, intermediateValue);
 				// @formatter:on
 				
@@ -231,6 +267,17 @@ public class AESBlock
 		}
 	}
 	
+	/**
+	 * Returns the contents of this block as a byte array. The data will be
+	 * stored in a manner such that creating a new AES block with the byte[]
+	 * returned by this method should produce a block with Equivalent contents.
+	 * 
+	 * More specifically, the data will be transferred from top to bottom, left
+	 * to right. data[0][0] will be stored in index 0 of the byte[], data[0][1]
+	 * will be stored in index 1, data[1][0] will be stored in index 4, etc.
+	 * 
+	 * @return The contents of this block as a byte array.
+	 */
 	public byte[] toByteArray()
 	{
 		byte[] data = new byte[blockType.numberOfBytes];
@@ -253,6 +300,13 @@ public class AESBlock
 		return data;
 	}
 	
+	/**
+	 * Perform a 1-1 addition operation between this block and the specified
+	 * roundKey. Each (row, column) of the given key will be added to the (row,
+	 * column) of this block.
+	 * 
+	 * @param roundKey
+	 */
 	public void addRoundKey(AESBlock roundKey)
 	{
 		if (this.blockType != AESBlockType.BIT_128)

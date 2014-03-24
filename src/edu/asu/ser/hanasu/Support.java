@@ -1,5 +1,13 @@
 package edu.asu.ser.hanasu;
 
+/**
+ * General, reusable functions that are not specific to a package or type of
+ * support (as is the case with edu.asu.ser.hanasu.encryption#Blocks)
+ * 
+ * @see edu.asu.ser.hanasu.encryption#Blocks
+ * @author Moore, Zachary
+ * 
+ */
 public class Support
 {
 	/**
