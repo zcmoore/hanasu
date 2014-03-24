@@ -3,8 +3,6 @@ package edu.asu.ser.hanasu.encryption;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 /**
  * Object used to encrypt and decrypt data, using AES encryption.
  * 
@@ -159,6 +157,14 @@ public class AESCryptographer
 		}
 	}
 	
+	/**
+	 * Decrypts the given data using AES protocol, with the {@link #key} and
+	 * {@link #blockType} associated with this AESCryptographer.
+	 * 
+	 * @param data
+	 *            Data to be decrypted
+	 * @return Decrypted data as a String
+	 */
 	public String decrypt(byte[] data)
 	{
 		try
@@ -221,7 +227,7 @@ public class AESCryptographer
 						bytesPerBlock);
 			}
 			
-			//return Blocks.convertByteArrayToString(decryptedData);
+			// return Blocks.convertByteArrayToString(decryptedData);
 			return new String(decryptedData);
 		}
 		catch (InvalidBlockSizeException e)
@@ -231,15 +237,20 @@ public class AESCryptographer
 		}
 	}
 	
+	/**
+	 * Included for completeness.
+	 * 
+	 * @see #decrypt(byte[])
+	 */
 	public String decrypt(AESBlock data)
 	{
-		// TODO: implement
-		throw new NotImplementedException();
+		return decrypt(data.toByteArray());
 	}
 	
 	private AESBlock[] expandKey(AESBlock key) throws InvalidBlockSizeException
 	{
-		int numberOfRounds = Math.max(keyType.wordCount(), blockType.wordCount()) + 6;
+		int numberOfRounds = Math.max(keyType.wordCount(),
+				blockType.wordCount()) + 6;
 		AESBlock[] expandedKey = new AESBlock[numberOfRounds + 1];
 		expandedKey[0] = key;
 		
@@ -258,13 +269,31 @@ public class AESCryptographer
 			
 			for (int word = 1; word < keyType.wordCount(); word++)
 			{
-				currentBlock[word] = Blocks.xor(currentBlock[word - 1], previousBlock.getWord(word));
+				currentBlock[word] = Blocks.xor(currentBlock[word - 1],
+						previousBlock.getWord(word));
 			}
 		}
 		
 		return expandedKey;
 	}
 	
+	/**
+	 * This function was introduced in AES to ensure there are no weak keys.
+	 * 
+	 * Function G is a combination of three operations: 
+	 * --shift word left by 1;
+	 * --substitute bytes using the SBox; 
+	 * --add the round constant to the current word 
+	 * (see {@link #getRelevantRoundConstant(int)})
+	 * 
+	 * Note: this method works on a copy of the provided byte array. As such,
+	 * the changes to the input word will not be reflected in the given object.
+	 * Changes will only be reflected in the returned array.
+	 * 
+	 * @param word
+	 * @param relevantRoundConstant
+	 * @return
+	 */
 	private byte[] funtionG(byte[] word, byte relevantRoundConstant)
 	{
 		// Work on a copy - do not alter the provided array
@@ -285,6 +314,21 @@ public class AESCryptographer
 		return result;
 	}
 	
+	/**
+	 * The round constant (Rcon) in AES is a word (4 bytes) in which the bottom
+	 * three bytes are 0. As the bottom bytes are well known, this method is not
+	 * designed to return them. Rather, it returns only the left-most (most
+	 * relevant) byte (i.e. the only non-0 byte).
+	 * 
+	 * There is one round constant for each round of AES.
+	 * 
+	 * The most significant byte of a round constant is recursively defined as:
+	 * Rcon[1] = 1; 
+	 * Rcon[index] = 2 * Rcon[i - 1];
+	 * 
+	 * @param roundIndex
+	 * @return
+	 */
 	private byte getRelevantRoundConstant(int roundIndex)
 	{
 		byte result = 1;

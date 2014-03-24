@@ -1,5 +1,13 @@
 package edu.asu.ser.hanasu.encryption;
 
+/**
+ * Specifies the types (i.e. sizes) of key- and data- blocks that this AES
+ * module supports. Currently, the implementation is limited to 128-bit key and
+ * data blocks, but may be expanded to support 192-bit and 256-bit variations.
+ * 
+ * @author Moore, Zachary
+ * 
+ */
 public enum AESBlockType
 {
 	// TODO extend support to 192 and 256-bit AES
