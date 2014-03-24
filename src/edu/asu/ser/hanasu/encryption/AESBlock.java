@@ -165,9 +165,9 @@ public class AESBlock
 				byte intermediateValue;
 				
 				// @formatter:off
-				mixedValue = RijndaelField.multiply(data[row][column], 2);
+				mixedValue = RijndaelField.multiply(data[row][column], 0x02);
 				
-				intermediateValue = RijndaelField.multiply(data[nextRow][column], 3);
+				intermediateValue = RijndaelField.multiply(data[nextRow][column], 0x03);
 				mixedValue = RijndaelField.add(mixedValue, intermediateValue);
 				
 				mixedValue = RijndaelField.add(mixedValue, data[row2][column]);

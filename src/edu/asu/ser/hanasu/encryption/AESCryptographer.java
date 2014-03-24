@@ -76,7 +76,7 @@ public class AESCryptographer
 	 */
 	public byte[] encrypt(String message)
 	{
-		byte[] data = Blocks.convertStringToByteArray(message);
+		byte[] data = message.getBytes();
 		return encrypt(data);
 	}
 	
@@ -221,7 +221,8 @@ public class AESCryptographer
 						bytesPerBlock);
 			}
 			
-			return Blocks.convertByteArrayToString(decryptedData);
+			//return Blocks.convertByteArrayToString(decryptedData);
+			return new String(decryptedData);
 		}
 		catch (InvalidBlockSizeException e)
 		{

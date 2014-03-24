@@ -9,6 +9,11 @@ public class RijndaelField
 		return (byte) (byte1 ^ byte2);
 	}
 	
+	public static byte multiply(int multiplier, int multiplicand)
+	{
+		return multiply((byte) multiplier, (byte) multiplicand);
+	}
+	
 	public static byte multiply(int multiplier, byte byte2)
 	{
 		return multiply((byte) multiplier, byte2);
