@@ -1,13 +1,12 @@
 package unit_tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import edu.asu.ser.hanasu.Support;
 import edu.asu.ser.hanasu.encryption.Blocks;
 import edu.asu.ser.hanasu.encryption.RijndaelField;
 
