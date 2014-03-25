@@ -11,7 +11,7 @@ import javax.swing.*;
 public class NewServerGUI extends JFrame implements ActionListener,
 		WindowListener
 {
-	
+	//Generated serial id
 	private static final long serialVersionUID = -2318140618087709876L;
 	private JPanel backPanelTop, backPanelCenter;
 	private JTextField portField;

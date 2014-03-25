@@ -4,7 +4,7 @@ import java.io.*;
 
 public class EncryptedMessage implements Serializable
 {
-	
+	//Generated serial id
 	private static final long serialVersionUID = 9171419644778126526L;
 	static final int CLIENTSCONNECTED = 0, MESSAGE = 1, LOGOUT = 2;
 	private int type;
