@@ -90,7 +90,7 @@ public class Server
 		
 	}
 	
-	private synchronized void outputMessageToClients(String message)
+	private synchronized void outputMessageToClients(String message, InetAddress sendTo)
 	{
 		// Username is attached in run() method
 		String encryptedmessageWUserName = message + "\n";
@@ -103,11 +103,15 @@ public class Server
 		for (int index = clientList.size(); --index >= 0;)
 		{
 			ClientThread clientThreadVar = clientList.get(index);
-			if (!clientThreadVar.writeMessage(encryptedmessageWUserName))
+			//TODO add socket code for InetAddress
+			if(clientThreadVar.getClientSocket().getInetAddress().toString() == sendTo.getHostAddress())
 			{
-				clientList.remove(index);
-				displayMessageOnGUI("Disconnected Client "
-						+ clientThreadVar.username + " removed from list.");
+				if (!clientThreadVar.writeMessage(encryptedmessageWUserName))
+				{
+					clientList.remove(index);
+					displayMessageOnGUI("Disconnected Client "
+							+ clientThreadVar.username + " removed from list.");
+				}
 			}
 		}
 	}
@@ -195,7 +199,7 @@ public class Server
 					{
 					
 						case EncryptedMessage.MESSAGE:
-							outputMessageToClients(username + ": " + message);
+							outputMessageToClients(username + ": " + message, chatMessage.getSendTo());
 							break;
 						case EncryptedMessage.LOGOUT:
 							displayMessageOnGUI(username
@@ -260,17 +264,28 @@ public class Server
 				close();
 				return false;
 			}
-			try
-			{
-				objectOutputStream.writeObject(new EncryptedMessage(
-						EncryptedMessage.MESSAGE, message.getBytes()));
-			}
-			catch (IOException e)
-			{
-				displayMessageOnGUI("Error sending message to " + username);
-				displayMessageOnGUI(e.toString());
-			}
+			/*
+				try
+				{
+					//TODO fix with channel list
+					
+					objectOutputStream.writeObject(new EncryptedMessage(
+							EncryptedMessage.MESSAGE, message.getBytes()));
+					
+					
+				}
+				catch (IOException e)
+				{
+					displayMessageOnGUI("Error sending message to " + username);
+					displayMessageOnGUI(e.toString());
+				}
+			*/
 			return true;
+		}
+		
+		private Socket getClientSocket()
+		{
+			return clientSocket;
 		}
 	}
 }
