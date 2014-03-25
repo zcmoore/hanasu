@@ -134,7 +134,7 @@ public class Client
 		
 	}
 	
-	public static void main(String[] args)
+	public static void main(String[] args) throws UnknownHostException
 	{
 		int portNumber = 443;
 		String serverAddress = "localhost";
@@ -178,23 +178,24 @@ public class Client
 			String message = scan.nextLine();
 			byte[] unencryptedMessage = null;
 			
+			//TODO fix sendTo address
 			if (message.equalsIgnoreCase("LOGOUT"))
 			{
 				client.sendMessageToServer(new EncryptedMessage(
-						EncryptedMessage.LOGOUT, unencryptedMessage));
+						EncryptedMessage.LOGOUT, unencryptedMessage, InetAddress.getByName("localhost")));
 				break;
 			}
 			else if (message.equalsIgnoreCase("WHOISIN"))
 			{
 				client.sendMessageToServer(new EncryptedMessage(
-						EncryptedMessage.CLIENTSCONNECTED, unencryptedMessage));
+						EncryptedMessage.CLIENTSCONNECTED, unencryptedMessage, InetAddress.getByName("localhost")));
 			}
 			else
 			{
 				// TODO encrypt call
 				byte[] encryptedMessage = unencryptedMessage;
 				client.sendMessageToServer(new EncryptedMessage(
-						EncryptedMessage.MESSAGE, encryptedMessage));
+						EncryptedMessage.MESSAGE, encryptedMessage, InetAddress.getByName("localhost")));
 			}
 		}
 		client.disconnect();
@@ -212,7 +213,6 @@ public class Client
 				{
 					EncryptedMessage encryptedMessage = (EncryptedMessage) objectInputStream.readObject();
 					// TODO decrypt call and attach date/time received
-					
 					clientGUI.append(new String(encryptedMessage.getMessage()));
 				}
 				catch (IOException ioException)

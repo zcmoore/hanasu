@@ -1,8 +1,12 @@
 package edu.asu.ser.hanasu.server;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
+import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class ClientGUI extends JFrame implements ActionListener
 {
@@ -20,6 +24,9 @@ public class ClientGUI extends JFrame implements ActionListener
 	private int defaultPort;
 	private String defaultHost;
 	
+	//TODO replace this with channel ip
+	String channelIP = "192.168.154.10";
+	
 	public ClientGUI(String host, int port)
 	{
 		
@@ -29,7 +36,7 @@ public class ClientGUI extends JFrame implements ActionListener
 		
 		// The NorthPanel with:
 		JPanel northPanel = new JPanel(new GridLayout(3, 1));
-		// the server name anmd the port number
+		// the server name and the port number
 		JPanel serverAndPort = new JPanel(new GridLayout(1, 5, 1, 3));
 		// the two JTextField with default value for server address and port
 		// number
@@ -118,32 +125,56 @@ public class ClientGUI extends JFrame implements ActionListener
 	public void actionPerformed(ActionEvent e)
 	{
 		Object o = e.getSource();
-		byte[] unencryptedMessage = tf.getText().getBytes();
-		byte[] encryptedMessage = unencryptedMessage;
-		// if it is the Logout button
-		if (o == logout)
+		
+		try
 		{
-			client.sendMessageToServer(new EncryptedMessage(
-					EncryptedMessage.LOGOUT, encryptedMessage));
-			return;
+			byte[] unencryptedMessage;
+			unencryptedMessage = tf.getText().getBytes("UTF-8");
+			byte[] encryptedMessage = unencryptedMessage;
+			
+			try
+			{
+				if (o == logout)
+				{
+					client.sendMessageToServer(new EncryptedMessage(
+							EncryptedMessage.LOGOUT, encryptedMessage,
+							InetAddress.getByName("localhost")));
+					return;
+				}
+				
+				// if it the who is in button
+				if (o == whoIsIn)
+				{
+					client.sendMessageToServer(new EncryptedMessage(
+							EncryptedMessage.CLIENTSCONNECTED,
+							encryptedMessage, InetAddress
+									.getByName("localhost")));
+					return;
+				}
+				
+				// it is coming from the JTextField
+				if (connected)
+				{
+					// just have to send the message
+					client.sendMessageToServer(new EncryptedMessage(
+							EncryptedMessage.MESSAGE, encryptedMessage,
+							InetAddress.getByName(channelIP)));
+					tf.setText("");
+					return;
+				}
+			}
+			catch (UnknownHostException exception)
+			{
+				exception.printStackTrace();
+			}
 		}
-		// if it the who is in button
-		if (o == whoIsIn)
+		catch (UnsupportedEncodingException e1)
 		{
-			client.sendMessageToServer(new EncryptedMessage(
-					EncryptedMessage.CLIENTSCONNECTED, encryptedMessage));
-			return;
+			e1.printStackTrace();
 		}
 		
-		// ok it is coming from the JTextField
-		if (connected)
-		{
-			// just have to send the message
-			client.sendMessageToServer(new EncryptedMessage(
-					EncryptedMessage.MESSAGE, encryptedMessage));
-			tf.setText("");
-			return;
-		}
+		// TODO fix sendTo
+		// if it is the Logout button
 		
 		if (o == login)
 		{
