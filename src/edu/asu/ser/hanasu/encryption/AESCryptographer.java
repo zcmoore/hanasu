@@ -1,6 +1,5 @@
 package edu.asu.ser.hanasu.encryption;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -92,69 +91,47 @@ public class AESCryptographer
 	 */
 	public byte[] encrypt(byte[] data)
 	{
-		try
+		// Divide data into blocks for processing
+		AESBlock[] dataBlocks = AESBlock.parseBlocks(data, blockType);
+		
+		for (AESBlock block : dataBlocks)
 		{
-			ArrayList<AESBlock> dataBlocks = new ArrayList<>();
-			int index = 0;
-			
-			// Divide data into blocks for processing
-			while (index < data.length)
-			{
-				int length = blockType.numberOfBytes;
-				int remainingData = data.length - index;
-				length = (remainingData < length) ? remainingData : length;
-				byte[] dataSection = new byte[length];
-				System.arraycopy(data, index, dataSection, 0, length);
-				
-				AESBlock dataBlock = new AESBlock(dataSection, blockType);
-				dataBlocks.add(dataBlock);
-				index += length;
-			}
-			
-			for (AESBlock block : dataBlocks)
-			{
-				block.addRoundKey(key[0]);
-			}
-			
-			// Process each block until all keys are used
-			for (int round = 1; round < key.length - 1; round++)
-			{
-				for (AESBlock block : dataBlocks)
-				{
-					block.substituteBytes();
-					block.shiftRows();
-					block.mixColumns();
-					block.addRoundKey(key[round]);
-				}
-			}
-			
+			block.addRoundKey(key[0]);
+		}
+		
+		// Process each block until all keys are used
+		for (int round = 1; round < key.length - 1; round++)
+		{
 			for (AESBlock block : dataBlocks)
 			{
 				block.substituteBytes();
 				block.shiftRows();
-				block.addRoundKey(key[key.length - 1]);
+				block.mixColumns();
+				block.addRoundKey(key[round]);
 			}
-			
-			int numberOfBlocks = dataBlocks.size();
-			int bytesPerBlock = blockType.numberOfBytes;
-			byte[] encryptedData = new byte[bytesPerBlock * numberOfBlocks];
-			
-			for (index = 0; index < numberOfBlocks; index++)
-			{
-				AESBlock block = dataBlocks.get(index);
-				byte[] dataArray = block.toByteArray();
-				int position = index * bytesPerBlock;
-				System.arraycopy(dataArray, 0, encryptedData, position,
-						bytesPerBlock);
-			}
-			
-			return encryptedData;
 		}
-		catch (InvalidBlockSizeException e)
+		
+		for (AESBlock block : dataBlocks)
 		{
-			e.printStackTrace();
-			return null;
+			block.substituteBytes();
+			block.shiftRows();
+			block.addRoundKey(key[key.length - 1]);
 		}
+		
+		int numberOfBlocks = dataBlocks.length;
+		int bytesPerBlock = blockType.numberOfBytes;
+		byte[] encryptedData = new byte[bytesPerBlock * numberOfBlocks];
+		
+		for (int index = 0; index < numberOfBlocks; index++)
+		{
+			AESBlock block = dataBlocks[index];
+			byte[] dataArray = block.toByteArray();
+			int position = index * bytesPerBlock;
+			System.arraycopy(dataArray, 0, encryptedData, position,
+					bytesPerBlock);
+		}
+		
+		return encryptedData;
 	}
 	
 	/**
@@ -167,74 +144,51 @@ public class AESCryptographer
 	 */
 	public String decrypt(byte[] data)
 	{
-		try
+		// Divide data into blocks for processing
+		AESBlock[] dataBlocks = AESBlock.parseBlocks(data, blockType);
+		
+		// Process first round without mixColumns
+		for (AESBlock block : dataBlocks)
 		{
-			ArrayList<AESBlock> dataBlocks = new ArrayList<>();
-			int index = 0;
-			
-			// TODO: Modulurize
-			// Divide data into blocks for processing
-			while (index < data.length)
-			{
-				int length = blockType.numberOfBytes;
-				int remainingData = data.length - index;
-				length = (remainingData < length) ? remainingData : length;
-				byte[] dataSection = new byte[length];
-				System.arraycopy(data, index, dataSection, 0, length);
-				
-				AESBlock dataBlock = new AESBlock(dataSection, blockType);
-				dataBlocks.add(dataBlock);
-				index += length;
-			}
-			
-			// Process first round without mixColumns
+			block.addRoundKey(key[key.length - 1]);
+			block.inverseShiftRows();
+			block.invertBytes();
+		}
+		
+		// Process each block until all keys are used
+		// Process keys backwards
+		for (int round = key.length - 2; round >= 1; round--)
+		{
 			for (AESBlock block : dataBlocks)
 			{
-				block.addRoundKey(key[key.length - 1]);
+				block.addRoundKey(key[round]);
+				block.inverseMixColumns();
 				block.inverseShiftRows();
 				block.invertBytes();
 			}
-			
-			// Process each block until all keys are used
-			// Process keys backwards
-			for (int round = key.length - 2; round >= 1; round--)
-			{
-				for (AESBlock block : dataBlocks)
-				{
-					block.addRoundKey(key[round]);
-					block.inverseMixColumns();
-					block.inverseShiftRows();
-					block.invertBytes();
-				}
-			}
-			
-			// Add first round key
-			for (AESBlock block : dataBlocks)
-			{
-				block.addRoundKey(key[0]);
-			}
-			
-			int numberOfBlocks = dataBlocks.size();
-			int bytesPerBlock = blockType.numberOfBytes;
-			byte[] decryptedData = new byte[bytesPerBlock * numberOfBlocks];
-			
-			for (index = 0; index < numberOfBlocks; index++)
-			{
-				AESBlock block = dataBlocks.get(index);
-				byte[] dataArray = block.toByteArray();
-				int position = index * bytesPerBlock;
-				System.arraycopy(dataArray, 0, decryptedData, position,
-						bytesPerBlock);
-			}
-			
-			// return Blocks.convertByteArrayToString(decryptedData);
-			return new String(decryptedData);
 		}
-		catch (InvalidBlockSizeException e)
+		
+		// Add first round key
+		for (AESBlock block : dataBlocks)
 		{
-			e.printStackTrace();
-			return null;
+			block.addRoundKey(key[0]);
 		}
+		
+		int numberOfBlocks = dataBlocks.length;
+		int bytesPerBlock = blockType.numberOfBytes;
+		byte[] decryptedData = new byte[bytesPerBlock * numberOfBlocks];
+		
+		for (int index = 0; index < numberOfBlocks; index++)
+		{
+			AESBlock block = dataBlocks[index];
+			byte[] dataArray = block.toByteArray();
+			int position = index * bytesPerBlock;
+			System.arraycopy(dataArray, 0, decryptedData, position,
+					bytesPerBlock);
+		}
+		
+		// return Blocks.convertByteArrayToString(decryptedData);
+		return new String(decryptedData);
 	}
 	
 	/**
@@ -247,6 +201,18 @@ public class AESCryptographer
 		return decrypt(data.toByteArray());
 	}
 	
+	/**
+	 * Determines the number of rounds to be used for this type of encryption
+	 * (determined by 6 + the max number of words in the key or data blocks),
+	 * then expands the provided base key to generate one key for each round (a
+	 * total of 1 + numberOfRounds, when including the base key)
+	 * 
+	 * @param key
+	 *            Base key to be expanded
+	 * @return Expanded key, as an AESBlock[] of round keys
+	 * @throws InvalidBlockSizeException
+	 *             Indicates an invalid {@link #keyType}
+	 */
 	private AESBlock[] expandKey(AESBlock key) throws InvalidBlockSizeException
 	{
 		int numberOfRounds = Math.max(keyType.wordCount(),
@@ -280,11 +246,9 @@ public class AESCryptographer
 	/**
 	 * This function was introduced in AES to ensure there are no weak keys.
 	 * 
-	 * Function G is a combination of three operations: 
-	 * --shift word left by 1;
-	 * --substitute bytes using the SBox; 
-	 * --add the round constant to the current word 
-	 * (see {@link #getRelevantRoundConstant(int)})
+	 * Function G is a combination of three operations: --shift word left by 1;
+	 * --substitute bytes using the SBox; --add the round constant to the
+	 * current word (see {@link #getRelevantRoundConstant(int)})
 	 * 
 	 * Note: this method works on a copy of the provided byte array. As such,
 	 * the changes to the input word will not be reflected in the given object.
@@ -323,8 +287,7 @@ public class AESCryptographer
 	 * There is one round constant for each round of AES.
 	 * 
 	 * The most significant byte of a round constant is recursively defined as:
-	 * Rcon[1] = 1; 
-	 * Rcon[index] = 2 * Rcon[i - 1];
+	 * Rcon[1] = 1; Rcon[index] = 2 * Rcon[i - 1];
 	 * 
 	 * @param roundIndex
 	 * @return

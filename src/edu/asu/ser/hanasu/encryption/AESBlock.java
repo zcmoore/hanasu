@@ -85,6 +85,59 @@ public class AESBlock
 		this(new byte[0], blockType);
 	}
 	
+	public static AESBlock[] parseBlocks(byte[] data, AESBlockType blockType)
+	{
+		int blockLength = blockType.numberOfBytes;
+		int numberOfBlocks = data.length / blockLength;
+		int remainingBytes = data.length % blockLength;
+		AESBlock[] dataBlocks;
+		
+		try
+		{
+			if (remainingBytes > 0)
+			{
+				dataBlocks = new AESBlock[numberOfBlocks + 1];
+				
+				// Handle the last block
+				byte[] dataSection = new byte[remainingBytes];
+				int startIndex = data.length - remainingBytes;
+				System.arraycopy(data, startIndex, dataSection, 0,
+						remainingBytes);
+				
+				AESBlock dataBlock;
+				
+				dataBlock = new AESBlock(dataSection, blockType);
+				dataBlocks[numberOfBlocks] = dataBlock;
+			}
+			else
+			{
+				dataBlocks = new AESBlock[numberOfBlocks];
+			}
+			
+			for (int index = 0; index < numberOfBlocks; index++)
+			{
+				byte[] dataSection = new byte[blockLength];
+				int startIndex = index * blockLength;
+				System.arraycopy(data, startIndex, dataSection, 0, blockLength);
+				
+				AESBlock dataBlock = new AESBlock(dataSection, blockType);
+				dataBlocks[index] = dataBlock;
+			}
+		}
+		catch (InvalidBlockSizeException e)
+		{
+			e.printStackTrace();
+			dataBlocks = null;
+		}
+		
+		return dataBlocks;
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @return The data held in this block, backed by the block itself.
+	 */
 	public byte[][] getData()
 	{
 		return data;
