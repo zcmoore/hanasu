@@ -90,25 +90,30 @@ public class Server
 		
 	}
 	
-	private synchronized void outputMessageToClients(String message)
+	private synchronized void outputMessageToClient(EncryptedMessage message)
 	{
-		// Username is attached in run() method
-		String encryptedmessageWUserName = message + "\n";
-		
-		//Implies encryption is turned off
+		String encryptedmessageWUserName = new String(message.getMessage());
+		// Implies encryption is turned off
 		if (serverGUI.getDebuggingStatus())
+		{
+			// Username is attached in run() method
 			serverGUI.writeToDebugTextArea(encryptedmessageWUserName);
+			
+		}
 		
 		// decrementing loop in case of client disconnect
 		for (int index = clientList.size(); --index >= 0;)
 		{
 			ClientThread clientThreadVar = clientList.get(index);
-			if (!clientThreadVar.writeMessage(encryptedmessageWUserName))
-			{
-				clientList.remove(index);
-				displayMessageOnGUI("Disconnected Client "
-						+ clientThreadVar.username + " removed from list.");
-			}
+			
+			if(clientThreadVar.getClientSocket().getInetAddress().getHostAddress() == message.getSendTo().getHostAddress())
+				if (!clientThreadVar.writeMessage(encryptedmessageWUserName))
+				{
+					clientList.remove(index);
+					displayMessageOnGUI("Disconnected Client "
+							+ clientThreadVar.username + " removed from list.");
+				}
+			
 		}
 	}
 	
@@ -189,13 +194,17 @@ public class Server
 				
 				if (chatMessage != null)
 				{
-					String message = new String(chatMessage.getMessage());
+					String message = new String(username + ": " + new String(chatMessage.getMessage()) + ".\n");
 					
 					switch (chatMessage.getType())
 					{
 					
 						case EncryptedMessage.MESSAGE:
-							outputMessageToClients(username + ": " + message);
+							outputMessageToClient(
+									new EncryptedMessage(
+											EncryptedMessage.MESSAGE,
+											message.getBytes(),
+											chatMessage.getSendTo()));
 							break;
 						case EncryptedMessage.LOGOUT:
 							displayMessageOnGUI(username
@@ -260,17 +269,26 @@ public class Server
 				close();
 				return false;
 			}
+			
 			try
 			{
 				objectOutputStream.writeObject(new EncryptedMessage(
-						EncryptedMessage.MESSAGE, message.getBytes()));
+						EncryptedMessage.MESSAGE, message.getBytes(),
+						InetAddress.getByName("")));
+				
 			}
 			catch (IOException e)
 			{
 				displayMessageOnGUI("Error sending message to " + username);
 				displayMessageOnGUI(e.toString());
 			}
+			
 			return true;
+		}
+		
+		private Socket getClientSocket()
+		{
+			return clientSocket;
 		}
 	}
 }

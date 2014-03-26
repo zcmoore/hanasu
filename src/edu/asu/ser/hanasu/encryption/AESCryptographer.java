@@ -1,11 +1,18 @@
 package edu.asu.ser.hanasu.encryption;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
+/**
+ * Object used to encrypt and decrypt data, using AES encryption.
+ * 
+ * @author Moore, Zachary
+ * 
+ */
 public class AESCryptographer
 {
 	/** Used for substituting bytes during the diffusion process in each round */
-	private static SBox sBox = obtainSBox();
+	public static SBox sBox = new RijndaelSBox();
 	
 	/**
 	 * Size of the data blocks used by this Cryptographer. This will determine
@@ -23,155 +30,316 @@ public class AESCryptographer
 	 * Keys to encrypt and decrypt data. This is the expanded key; the base key
 	 * is included in this array, at index 0
 	 */
-	private AESBlock[] key;
+	private final AESBlock[] key;
 	
 	/**
-	 * Represents a single block of data. Note: the size of the block is
-	 * determined by {@link AESCryptographer#blockType}. AESBlocks should not
-	 * exist outside the context of an AESCryptographer object. When the data
-	 * exits outside of this context, it should be in the form of a byte[], not
-	 * an AESBlock.
+	 * Initiates a new Cryptographer based on the provided specifications. These
+	 * specifications will be used throughout the lifespan of this object, and
+	 * cannot be changed.
 	 * 
-	 * Private to prevent unintentional access from outside AESCryptographer.
+	 * This object's {@link #keyType} will be determined from the length of the
+	 * given key (see {@link AESBlockType#getType(int)}). If the key length is
+	 * not currently supported, an InvalidBlockSizeException will be thrown.
 	 * 
-	 * Also note: AESBlock is used for data and the AES key.
+	 * Supported blocks are: {@value AESBlockType#values()}
 	 * 
-	 * @author Moore, Zachary
-	 * 
+	 * @param blockSize
+	 *            The size of the blocks that this cryptographer will use. All
+	 *            supported types are available in AESBlockType.
+	 * @param key
+	 *            They key that will be used for all encryption/decryption
+	 *            throughout the lifespan of this object.
+	 * @throws InvalidBlockSizeException
+	 *             Indicates that the given key size is not supported.
+	 * @see AESBlockType#values()
 	 */
-	private class AESBlock
-	{
-		/** Data stored in this block. */
-		private byte[][] data;
-		
-		/**
-		 * Creates an AESBlock containing the provided data. Note, the size of
-		 * this block (i.e. the number of bytes it can hold) is determined by
-		 * the AESCryptographer in which this object exists. If the length of
-		 * the provided data is larger than the block size, an
-		 * InvalidBlockSizeException will be thrown. If the length of the
-		 * provided data is smaller than the block size, it will be padded,
-		 * i.e., its length will be extended (byte-0 will be added) such that
-		 * its new length is equal to the block size.
-		 * 
-		 * Note: the actual data array will not be extended, to improve
-		 * performance. Rather, the entries are not added to the 2D array when
-		 * the data is being mixed.
-		 * 
-		 * @param data
-		 *            The data to store in this block, as a byte[]
-		 * @throws InvalidBlockSizeException
-		 */
-		public AESBlock(byte[] data) throws InvalidBlockSizeException
-		{
-			// Ensure data is not too large
-			if (data.length > blockType.numberOfBytes)
-			{
-				throw new InvalidBlockSizeException("Block is too large");
-			}
-			
-			// Instantiate data[][]
-			int numRows = blockType.numberOfRows();
-			int numColumns = blockType.numberOfColumns();
-			this.data = new byte[numRows][numColumns];
-			
-			// Move data from byte[] into byte[][], top to bottom, L to R
-			for (int column = 0, index = 0; column < numColumns; column++)
-			{
-				for (int row = 0; row < numRows; row++, index++)
-				{
-					if (index < data.length)
-						this.data[row][column] = data[index];
-					else
-						break;
-				}
-			}
-		}
-		
-		public byte[][] getData()
-		{
-			return data;
-		}
-		
-		/**
-		 * Returns the specified word (i.e. row) of data contained in this
-		 * block. Note that the number of words in a block is determined by its
-		 * size - a 128-bit block has 4 words, a 192-bit block has 6 words, and
-		 * a 256-bit block has 8 words.
-		 * 
-		 * @param index
-		 *            Index of the desired word
-		 * @return Value of the specified word, as an array of bytes (length 4)
-		 */
-		public byte[] getWord(int index)
-		{
-			return data[index];
-		}
-		
-		public void substituteBytes()
-		{
-			
-		}
-		
-		public void shiftRows()
-		{
-			
-		}
-		
-		public void mixColumns()
-		{
-			
-		}
-		
-		public void addRoundKey()
-		{
-			
-		}
-	}
-	
-	private AESCryptographer(AESBlockType blockSize, AESBlockType keySize)
-	{
-		this.blockType = blockSize;
-		this.keyType = keySize;
-	}
-	
-	public AESCryptographer(byte[] key, AESBlockType blockSize)
+	public AESCryptographer(AESBlockType blockSize, byte[] key)
 			throws InvalidBlockSizeException
 	{
-		this(blockSize, AESBlockType.getType(key.length));
+		this.blockType = blockSize;
+		this.keyType = AESBlockType.getType(key.length);
 		
-		AESBlock baseKey = new AESBlock(key);
+		AESBlock baseKey = new AESBlock(key, keyType);
 		this.key = expandKey(baseKey);
 	}
 	
-	public static SBox obtainSBox()
-	{
-		throw new NotImplementedException();
-	}
-	
+	/**
+	 * Encrypts the given String, and returns the encrypted data as a byte[].
+	 * This protocol is equivalent to {@link #encrypt(byte[])}
+	 * 
+	 * @param message
+	 *            The data to encrypt, as a string
+	 * @return Encrypted message, as a byte[]
+	 * @see #encrypt(byte[])
+	 */
 	public byte[] encrypt(String message)
 	{
-		throw new NotImplementedException();
+		byte[] data = message.getBytes();
+		return encrypt(data);
 	}
 	
+	/**
+	 * Encrypts the given data using AES protocol, with the {@link #key} and
+	 * {@link #blockType} associated with this AESCryptographer.
+	 * 
+	 * If the data is smaller than {@link #blockType}, then it will be
+	 * automatically padded. If data is larger than {@link #blockType} permits,
+	 * then the data will be divided into multiple blocks.
+	 * 
+	 * @param data
+	 *            Data to be encrypted
+	 * @return Encrypted data as a byte[]
+	 */
 	public byte[] encrypt(byte[] data)
 	{
-		throw new NotImplementedException();
+		try
+		{
+			ArrayList<AESBlock> dataBlocks = new ArrayList<>();
+			int index = 0;
+			
+			// Divide data into blocks for processing
+			while (index < data.length)
+			{
+				int length = blockType.numberOfBytes;
+				int remainingData = data.length - index;
+				length = (remainingData < length) ? remainingData : length;
+				byte[] dataSection = new byte[length];
+				System.arraycopy(data, index, dataSection, 0, length);
+				
+				AESBlock dataBlock = new AESBlock(dataSection, blockType);
+				dataBlocks.add(dataBlock);
+				index += length;
+			}
+			
+			for (AESBlock block : dataBlocks)
+			{
+				block.addRoundKey(key[0]);
+			}
+			
+			// Process each block until all keys are used
+			for (int round = 1; round < key.length - 1; round++)
+			{
+				for (AESBlock block : dataBlocks)
+				{
+					block.substituteBytes();
+					block.shiftRows();
+					block.mixColumns();
+					block.addRoundKey(key[round]);
+				}
+			}
+			
+			for (AESBlock block : dataBlocks)
+			{
+				block.substituteBytes();
+				block.shiftRows();
+				block.addRoundKey(key[key.length - 1]);
+			}
+			
+			int numberOfBlocks = dataBlocks.size();
+			int bytesPerBlock = blockType.numberOfBytes;
+			byte[] encryptedData = new byte[bytesPerBlock * numberOfBlocks];
+			
+			for (index = 0; index < numberOfBlocks; index++)
+			{
+				AESBlock block = dataBlocks.get(index);
+				byte[] dataArray = block.toByteArray();
+				int position = index * bytesPerBlock;
+				System.arraycopy(dataArray, 0, encryptedData, position,
+						bytesPerBlock);
+			}
+			
+			return encryptedData;
+		}
+		catch (InvalidBlockSizeException e)
+		{
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
+	/**
+	 * Decrypts the given data using AES protocol, with the {@link #key} and
+	 * {@link #blockType} associated with this AESCryptographer.
+	 * 
+	 * @param data
+	 *            Data to be decrypted
+	 * @return Decrypted data as a String
+	 */
 	public String decrypt(byte[] data)
 	{
-		throw new NotImplementedException();
+		try
+		{
+			ArrayList<AESBlock> dataBlocks = new ArrayList<>();
+			int index = 0;
+			
+			// TODO: Modulurize
+			// Divide data into blocks for processing
+			while (index < data.length)
+			{
+				int length = blockType.numberOfBytes;
+				int remainingData = data.length - index;
+				length = (remainingData < length) ? remainingData : length;
+				byte[] dataSection = new byte[length];
+				System.arraycopy(data, index, dataSection, 0, length);
+				
+				AESBlock dataBlock = new AESBlock(dataSection, blockType);
+				dataBlocks.add(dataBlock);
+				index += length;
+			}
+			
+			// Process first round without mixColumns
+			for (AESBlock block : dataBlocks)
+			{
+				block.addRoundKey(key[key.length - 1]);
+				block.inverseShiftRows();
+				block.invertBytes();
+			}
+			
+			// Process each block until all keys are used
+			// Process keys backwards
+			for (int round = key.length - 2; round >= 1; round--)
+			{
+				for (AESBlock block : dataBlocks)
+				{
+					block.addRoundKey(key[round]);
+					block.inverseMixColumns();
+					block.inverseShiftRows();
+					block.invertBytes();
+				}
+			}
+			
+			// Add first round key
+			for (AESBlock block : dataBlocks)
+			{
+				block.addRoundKey(key[0]);
+			}
+			
+			int numberOfBlocks = dataBlocks.size();
+			int bytesPerBlock = blockType.numberOfBytes;
+			byte[] decryptedData = new byte[bytesPerBlock * numberOfBlocks];
+			
+			for (index = 0; index < numberOfBlocks; index++)
+			{
+				AESBlock block = dataBlocks.get(index);
+				byte[] dataArray = block.toByteArray();
+				int position = index * bytesPerBlock;
+				System.arraycopy(dataArray, 0, decryptedData, position,
+						bytesPerBlock);
+			}
+			
+			// return Blocks.convertByteArrayToString(decryptedData);
+			return new String(decryptedData);
+		}
+		catch (InvalidBlockSizeException e)
+		{
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
+	/**
+	 * Included for completeness.
+	 * 
+	 * @see #decrypt(byte[])
+	 */
 	public String decrypt(AESBlock data)
 	{
-		throw new NotImplementedException();
+		return decrypt(data.toByteArray());
 	}
 	
-	private AESBlock[] expandKey(AESBlock key)
+	private AESBlock[] expandKey(AESBlock key) throws InvalidBlockSizeException
 	{
-		throw new NotImplementedException();
+		int numberOfRounds = Math.max(keyType.wordCount(),
+				blockType.wordCount()) + 6;
+		AESBlock[] expandedKey = new AESBlock[numberOfRounds + 1];
+		expandedKey[0] = key;
+		
+		for (int roundIndex = 1; roundIndex <= numberOfRounds; roundIndex++)
+		{
+			AESBlock previousBlock = expandedKey[roundIndex - 1];
+			expandedKey[roundIndex] = new AESBlock(keyType);
+			
+			byte[][] currentBlock = expandedKey[roundIndex].getData();
+			
+			// Handle the first word separately
+			byte relevantRoundConstant = getRelevantRoundConstant(roundIndex);
+			byte[] grounInput = previousBlock.getWord(keyType.wordLength() - 1);
+			byte[] groundWord = funtionG(grounInput, relevantRoundConstant);
+			currentBlock[0] = Blocks.xor(previousBlock.getWord(0), groundWord);
+			
+			for (int word = 1; word < keyType.wordCount(); word++)
+			{
+				currentBlock[word] = Blocks.xor(currentBlock[word - 1],
+						previousBlock.getWord(word));
+			}
+		}
+		
+		return expandedKey;
+	}
+	
+	/**
+	 * This function was introduced in AES to ensure there are no weak keys.
+	 * 
+	 * Function G is a combination of three operations: 
+	 * --shift word left by 1;
+	 * --substitute bytes using the SBox; 
+	 * --add the round constant to the current word 
+	 * (see {@link #getRelevantRoundConstant(int)})
+	 * 
+	 * Note: this method works on a copy of the provided byte array. As such,
+	 * the changes to the input word will not be reflected in the given object.
+	 * Changes will only be reflected in the returned array.
+	 * 
+	 * @param word
+	 * @param relevantRoundConstant
+	 * @return
+	 */
+	private byte[] funtionG(byte[] word, byte relevantRoundConstant)
+	{
+		// Work on a copy - do not alter the provided array
+		byte[] result = Arrays.copyOf(word, blockType.wordLength());
+		
+		// Shift left 1
+		Blocks.shiftWordLeft(result, 1);
+		
+		// Substitute bytes
+		for (int index = 0; index < result.length; index++)
+		{
+			result[index] = sBox.substitute(result[index]);
+		}
+		
+		// Add RoundConstant
+		result[0] ^= relevantRoundConstant;
+		
+		return result;
+	}
+	
+	/**
+	 * The round constant (Rcon) in AES is a word (4 bytes) in which the bottom
+	 * three bytes are 0. As the bottom bytes are well known, this method is not
+	 * designed to return them. Rather, it returns only the left-most (most
+	 * relevant) byte (i.e. the only non-0 byte).
+	 * 
+	 * There is one round constant for each round of AES.
+	 * 
+	 * The most significant byte of a round constant is recursively defined as:
+	 * Rcon[1] = 1; 
+	 * Rcon[index] = 2 * Rcon[i - 1];
+	 * 
+	 * @param roundIndex
+	 * @return
+	 */
+	private byte getRelevantRoundConstant(int roundIndex)
+	{
+		byte result = 1;
+		
+		// RoundKey[i] = 2 * RoundKey[i - 1]
+		for (int index = 1; index < roundIndex; index++)
+		{
+			result = RijndaelField.multiply(2, result);
+		}
+		
+		return result;
 	}
 	
 }

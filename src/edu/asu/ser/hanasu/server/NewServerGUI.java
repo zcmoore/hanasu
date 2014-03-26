@@ -11,7 +11,7 @@ import javax.swing.*;
 public class NewServerGUI extends JFrame implements ActionListener,
 		WindowListener
 {
-	//Generated serial id
+	// Generated serial id
 	private static final long serialVersionUID = -2318140618087709876L;
 	private JPanel backPanelTop, backPanelCenter;
 	private JTextField portField;
@@ -139,13 +139,13 @@ public class NewServerGUI extends JFrame implements ActionListener,
 	public void writeToDebugTextArea(String string)
 	{
 		debugTextArea.append(string);
-		debugTextArea.setCaretPosition(debugTextArea.getText().length());
+		debugTextArea.setCaretPosition(debugTextArea.getText().length() - 1);
 	}
 	
 	public void writeToEventTextArea(String string)
 	{
 		eventTextArea.append(string);
-		eventTextArea.setCaretPosition(eventTextArea.getText().length());
+		eventTextArea.setCaretPosition(eventTextArea.getText().length() - 1);
 		
 	}
 	
