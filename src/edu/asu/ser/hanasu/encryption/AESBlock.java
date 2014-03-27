@@ -85,6 +85,19 @@ public class AESBlock
 		this(new byte[0], blockType);
 	}
 	
+	/**
+	 * Creates an array of AESBlocks using the given data. The number of blocks
+	 * produced is determined by the size of the given data array. This
+	 * algorithm will produce the minimum number of blocks that can hold all
+	 * uncompressed data specified by the given array.
+	 * 
+	 * @param data
+	 *            The byte[] to encapsulate into a number of AESBlocks
+	 * @param blockType
+	 *            The type/size of block that should be produced
+	 * @return An array of AESBlocks containing all of the data in the given
+	 *         data[]
+	 */
 	public static AESBlock[] parseBlocks(byte[] data, AESBlockType blockType)
 	{
 		int blockLength = blockType.numberOfBytes;
@@ -197,7 +210,7 @@ public class AESBlock
 	}
 	
 	/**
-	 * Confuse the data in this block by shifting all rows to the left by an
+	 * Diffuse the data in this block by shifting all rows to the left by an
 	 * amount equal to the row index of each row. That is, row 0 will be shifted
 	 * by an amount of 0, row one will be shifted left by a value of 1, etc.
 	 * 
@@ -231,6 +244,11 @@ public class AESBlock
 		}
 	}
 	
+	/**
+	 * Confuses the data by column using a matrix multiplication, where the
+	 * multiplier is a matrix such that its first row is {2, 3, 1, 1} and each
+	 * subsequent row is equal to the previous row shifted to the right by 1.
+	 */
 	public void mixColumns()
 	{
 		if (this.blockType != AESBlockType.BIT_128)
@@ -239,6 +257,7 @@ public class AESBlock
 			throw new NotImplementedException();
 		}
 		
+		// TODO: replace with loop to perform pseudo matrix multiplication
 		int numColumns = blockType.numberOfColumns();
 		int numRows = blockType.numberOfRows();
 		for (int column = 0; column < numColumns; column++)
@@ -274,6 +293,12 @@ public class AESBlock
 		}
 	}
 	
+	/**
+	 * Reverses the operation done by {@link #mixColumns()}. If a block calls
+	 * {@link #mixColumns()} and directly afterwards calls
+	 * {@link #inverseMixColumns()}, then it should be reverted to its original
+	 * state.
+	 */
 	public void inverseMixColumns()
 	{
 		if (this.blockType != AESBlockType.BIT_128)

@@ -3,7 +3,36 @@ package edu.asu.ser.hanasu.encryption;
 import java.util.Arrays;
 
 /**
- * Object used to encrypt and decrypt data, using AES encryption.
+ * Object used to encrypt and decrypt data, using AES encryption. As of version
+ * 0.1A, only 128-bit AES is supported.
+ * 
+ * AES treats all data as blocks (i.e. 2D arrays) of bytes, with a row length of
+ * 4 columns each, and a column length determined by the type of AES (128-bit
+ * has 4 rows x 4 columns, for a total of 16 bytes = 128 bits). The encryption
+ * of this data consists of a number of rounds, which is determined by the size
+ * of the data and key blocks. More precisely, the number of rounds is equal to
+ * Max(dataBlock.rows, keyBlock.rows) + 6. Thus, AES that uses a 128-BIT (4
+ * bytes) key and 128-BIT blocks will consist of 10 rounds = Max(4, 4) + 6.
+ * 
+ * In addition to the data, the key is also is treated as a block of bytes.
+ * Note: prior to encryption or decryption, the key is expanded in order to
+ * create a number of different keys equal to the number of rounds + 1. For
+ * specifics on the key expansion algorithm, see {@link #expandKey(AESBlock)}.
+ * The generated keys are used in the processing of each round (one key per
+ * round). The base key (i.e. the key provided by the construction of this
+ * cryptographer) is key 0, and is added to the data blocks prior to the
+ * encryption rounds.
+ * 
+ * Each round of encryption consists of 4 basic steps, with the exception of the
+ * last round, which does not include the mixColumns step. The steps of each
+ * round are as follows: 
+ * (1) substitute each byte of data with its corresponding value in {@link #sBox}
+ * (2) shift each row by a specified amount, dependent on the row index. See {@link AESBlock#shiftRows()}
+ * (3) mix columns, using column-wise operations specified by {@link AESBlock#mixColumns()}
+ * (4) add the round key to each block of data.
+ * 
+ * Decryption consists of the above steps, inverted and done in reverse order.
+ * 
  * 
  * @author Moore, Zachary
  * 
