@@ -85,6 +85,72 @@ public class AESBlock
 		this(new byte[0], blockType);
 	}
 	
+	/**
+	 * Creates an array of AESBlocks using the given data. The number of blocks
+	 * produced is determined by the size of the given data array. This
+	 * algorithm will produce the minimum number of blocks that can hold all
+	 * uncompressed data specified by the given array.
+	 * 
+	 * @param data
+	 *            The byte[] to encapsulate into a number of AESBlocks
+	 * @param blockType
+	 *            The type/size of block that should be produced
+	 * @return An array of AESBlocks containing all of the data in the given
+	 *         data[]
+	 */
+	public static AESBlock[] parseBlocks(byte[] data, AESBlockType blockType)
+	{
+		int blockLength = blockType.numberOfBytes;
+		int numberOfBlocks = data.length / blockLength;
+		int remainingBytes = data.length % blockLength;
+		AESBlock[] dataBlocks;
+		
+		try
+		{
+			if (remainingBytes > 0)
+			{
+				dataBlocks = new AESBlock[numberOfBlocks + 1];
+				
+				// Handle the last block
+				byte[] dataSection = new byte[remainingBytes];
+				int startIndex = data.length - remainingBytes;
+				System.arraycopy(data, startIndex, dataSection, 0,
+						remainingBytes);
+				
+				AESBlock dataBlock;
+				
+				dataBlock = new AESBlock(dataSection, blockType);
+				dataBlocks[numberOfBlocks] = dataBlock;
+			}
+			else
+			{
+				dataBlocks = new AESBlock[numberOfBlocks];
+			}
+			
+			for (int index = 0; index < numberOfBlocks; index++)
+			{
+				byte[] dataSection = new byte[blockLength];
+				int startIndex = index * blockLength;
+				System.arraycopy(data, startIndex, dataSection, 0, blockLength);
+				
+				AESBlock dataBlock = new AESBlock(dataSection, blockType);
+				dataBlocks[index] = dataBlock;
+			}
+		}
+		catch (InvalidBlockSizeException e)
+		{
+			e.printStackTrace();
+			dataBlocks = null;
+		}
+		
+		return dataBlocks;
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @return The data held in this block, backed by the block itself.
+	 */
 	public byte[][] getData()
 	{
 		return data;
@@ -144,7 +210,7 @@ public class AESBlock
 	}
 	
 	/**
-	 * Confuse the data in this block by shifting all rows to the left by an
+	 * Diffuse the data in this block by shifting all rows to the left by an
 	 * amount equal to the row index of each row. That is, row 0 will be shifted
 	 * by an amount of 0, row one will be shifted left by a value of 1, etc.
 	 * 
@@ -178,6 +244,11 @@ public class AESBlock
 		}
 	}
 	
+	/**
+	 * Confuses the data by column using a matrix multiplication, where the
+	 * multiplier is a matrix such that its first row is {2, 3, 1, 1} and each
+	 * subsequent row is equal to the previous row shifted to the right by 1.
+	 */
 	public void mixColumns()
 	{
 		if (this.blockType != AESBlockType.BIT_128)
@@ -186,41 +257,30 @@ public class AESBlock
 			throw new NotImplementedException();
 		}
 		
-		int numColumns = blockType.numberOfColumns();
-		int numRows = blockType.numberOfRows();
-		for (int column = 0; column < numColumns; column++)
+		byte[] mixColumnConstant = new byte[] { 0x02, 0x03, 0x01, 0x01 };
+		for (int column = 0; column < blockType.numberOfColumns(); column++)
 		{
-			byte[] mixedColumn = new byte[numRows];
-			for (int row = 0; row < numRows; row++)
-			{
-				int nextRow = (row + 1) % numRows;
-				int row2 = (row + 2) % numRows;
-				int row3 = (row + 3) % numRows;
-				
-				byte mixedValue;
-				byte intermediateValue;
-				
-				// @formatter:off
-				mixedValue = RijndaelField.multiply(data[row][column], 0x02);
-				
-				intermediateValue = RijndaelField.multiply(data[nextRow][column], 0x03);
-				mixedValue = RijndaelField.add(mixedValue, intermediateValue);
-				
-				mixedValue = RijndaelField.add(mixedValue, data[row2][column]);
-				mixedValue = RijndaelField.add(mixedValue, data[row3][column]);
-				// @formatter:on
-				
-				mixedColumn[row] = mixedValue;
-			}
+			byte[] currentColumn = extractColumn(column);
 			
-			// Copy mixedColumn into data column
-			for (int row = 0; row < numRows; row++)
+			for (int row = 0; row < blockType.numberOfRows(); row++)
 			{
-				data[row][column] = mixedColumn[row];
+				// @formatter:off
+				byte[] products = RijndaelField.products(mixColumnConstant, currentColumn);
+				byte mixedValue = RijndaelField.sum(products);
+				
+				data[row][column] = mixedValue;
+				Blocks.shiftWordRight(mixColumnConstant, 1);
+				// @formatter:on
 			}
 		}
 	}
 	
+	/**
+	 * Reverses the operation done by {@link #mixColumns()}. If a block calls
+	 * {@link #mixColumns()} and directly afterwards calls
+	 * {@link #inverseMixColumns()}, then it should be reverted to its original
+	 * state.
+	 */
 	public void inverseMixColumns()
 	{
 		if (this.blockType != AESBlockType.BIT_128)
@@ -229,42 +289,64 @@ public class AESBlock
 			throw new NotImplementedException();
 		}
 		
-		int numColumns = blockType.numberOfColumns();
-		int numRows = blockType.numberOfRows();
-		for (int column = 0; column < numColumns; column++)
+		byte[] mixColumnConstant = new byte[] { 0x0E, 0x0B, 0x0D, 0x09 };
+		multiplyMixConstant(mixColumnConstant);
+	}
+	
+	/**
+	 * Performs pseudo-matrix multiplication between this data block (
+	 * {@link #data}) and a 'matrix' that is 'generated' using the given input
+	 * array. Note: the array should be a single row of the multiplicand matrix,
+	 * and as such, its length should equal the number of columns (i.e. the word
+	 * length) of this block.
+	 * 
+	 * The multiplicand matrix is defined as a matrix where each row is equal to
+	 * the base row (i.e. the input) shifted to the right by an amount equal to
+	 * the row index (index 0 is shifted 0 times, index 1 is shifted once, etc).
+	 * In this implementation, the multiplicand matrix is not generated before
+	 * hand, but rather it is simulated by shifting the base row by 1 after each
+	 * iteration. Therefore, overhead for the baseRow is no more than that
+	 * consumed by the input array.
+	 * 
+	 * @param mixColumnConstant
+	 *            The base row, used to simulate the multiplicand matrix.
+	 */
+	private void multiplyMixConstant(byte[] mixColumnConstant)
+	{
+		for (int column = 0; column < blockType.numberOfColumns(); column++)
 		{
-			byte[] mixedColumn = new byte[numRows];
-			for (int row = 0; row < numRows; row++)
-			{
-				int nextRow = (row + 1) % numRows;
-				int row2 = (row + 2) % numRows;
-				int row3 = (row + 3) % numRows;
-				
-				byte mixedValue;
-				byte intermediateValue;
-				
-				// @formatter:off
-				mixedValue = RijndaelField.multiply(0x0E, data[row][column]);
-				
-				intermediateValue = RijndaelField.multiply(0x0B, data[nextRow][column]);
-				mixedValue = RijndaelField.add(mixedValue, intermediateValue);
-
-				intermediateValue = RijndaelField.multiply(0x0D, data[row2][column]);
-				mixedValue = RijndaelField.add(mixedValue, intermediateValue);
-
-				intermediateValue = RijndaelField.multiply(0x09, data[row3][column]);
-				mixedValue = RijndaelField.add(mixedValue, intermediateValue);
-				// @formatter:on
-				
-				mixedColumn[row] = mixedValue;
-			}
+			byte[] currentColumn = extractColumn(column);
 			
-			// Copy mixedColumn into data column
-			for (int row = 0; row < numRows; row++)
+			for (int row = 0; row < blockType.numberOfRows(); row++)
 			{
-				data[row][column] = mixedColumn[row];
+				// @formatter:off
+				byte[] products = RijndaelField.products(mixColumnConstant, currentColumn);
+				byte mixedValue = RijndaelField.sum(products);
+				
+				data[row][column] = mixedValue;
+				Blocks.shiftWordRight(mixColumnConstant, 1);
+				// @formatter:on
 			}
 		}
+	}
+	
+	/**
+	 * Returns a byte[] representation of a column of this data block.
+	 * 
+	 * @param columnIndex
+	 *            Index of the column to extract; 0 indexed; read left to right
+	 * @return byte[] representation of the specified column
+	 */
+	private byte[] extractColumn(int columnIndex)
+	{
+		byte[] column = new byte[blockType.numberOfRows()];
+		
+		for (int rowIndex = 0; rowIndex < column.length; rowIndex++)
+		{
+			column[rowIndex] = this.data[rowIndex][columnIndex];
+		}
+		
+		return column;
 	}
 	
 	/**

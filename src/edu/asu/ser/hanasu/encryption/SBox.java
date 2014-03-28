@@ -104,10 +104,18 @@ public class SBox
 	 * value, the inverseValues array will be set such that inverseValues[value]
 	 * = index.
 	 */
-	public static void setupInverseBox()
+	public void setupInverseBox()
 	{
-		// TODO: implement SBox inversion
-		throw new NotImplementedException();
+		// Setup inverse box such that inverse[value] = index applies to all
+		// boxValue[index] = value
+		for (int index = 0; index < boxValues.length; index++)
+		{
+			byte baseValue = boxValues[index];
+			
+			// Make value unsigned by masking off all but the bottom 8 bits
+			int value = ((int) baseValue) & 0xFF;
+			inverseValues[value] = (byte) index;
+		}
 	}
 	
 	/**

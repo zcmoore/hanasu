@@ -30,13 +30,66 @@ public class RijndaelField
 	}
 	
 	/**
+	 * Adds a number of bytes together as specified by the field GF(2**8). See
+	 * {@link #add(byte, byte)}
+	 * 
+	 * @param bytes
+	 *            An array of bytes to sum together
+	 * @return The sum of the given bytes
+	 * @see #add(byte, byte)
+	 */
+	public static byte sum(byte... addends)
+	{
+		byte sum = 0;
+		for (byte addend : addends)
+		{
+			sum = add(sum, addend);
+		}
+		
+		return sum;
+	}
+	
+	/**
+	 * Batch operator. Multiplies all bytes in one array by each corresponding
+	 * byte in a second array. If arrays are of different sizes, an exception
+	 * will be thrown
+	 * 
+	 * @param bytes
+	 *            An array of bytes to multiply together
+	 * @return The products of the given arrays
+	 * @see #multiply(byte, byte)
+	 */
+	public static byte[] products(byte[] multipliers, byte[] multiplicands)
+	{
+		byte[] products;
+		
+		if (multipliers.length == multiplicands.length)
+		{
+			products = new byte[multipliers.length];
+		}
+		else
+		{
+			throw new IllegalArgumentException("arrays must be the same length");
+		}
+		
+		for (int index = 0; index < products.length; index++)
+		{
+			byte multiplier = multipliers[index];
+			byte multiplicand = multiplicands[index];
+			products[index] = multiply(multiplier, multiplicand);
+		}
+		
+		return products;
+	}
+	
+	/**
 	 * @see #multiply(byte, byte)
 	 */
 	public static byte multiply(int multiplier, int multiplicand)
 	{
 		return multiply((byte) multiplier, (byte) multiplicand);
 	}
-
+	
 	/**
 	 * @see #multiply(byte, byte)
 	 */
@@ -44,7 +97,7 @@ public class RijndaelField
 	{
 		return multiply((byte) multiplier, multiplicand);
 	}
-
+	
 	/**
 	 * @see #multiply(byte, byte)
 	 */
@@ -56,8 +109,10 @@ public class RijndaelField
 	/**
 	 * Multiply two bytes in the Rijndael Field.
 	 * 
-	 * @param multiplier Byte1 to be multiplied
-	 * @param multiplicand Byte2 to be multiplied
+	 * @param multiplier
+	 *            Byte1 to be multiplied
+	 * @param multiplicand
+	 *            Byte2 to be multiplied
 	 * @return Product of the multiplier and multiplicand
 	 */
 	public static byte multiply(byte multiplier, byte multiplicand)
