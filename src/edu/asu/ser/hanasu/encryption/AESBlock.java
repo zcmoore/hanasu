@@ -257,40 +257,41 @@ public class AESBlock
 			throw new NotImplementedException();
 		}
 		
-		// TODO: replace with loop to perform pseudo matrix multiplication
-		int numColumns = blockType.numberOfColumns();
-		int numRows = blockType.numberOfRows();
-		for (int column = 0; column < numColumns; column++)
+		byte[] mixColumnConstant = new byte[] { 0x02, 0x03, 0x01, 0x01 };
+		for (int column = 0; column < blockType.numberOfColumns(); column++)
 		{
-			byte[] mixedColumn = new byte[numRows];
-			for (int row = 0; row < numRows; row++)
-			{
-				int nextRow = (row + 1) % numRows;
-				int row2 = (row + 2) % numRows;
-				int row3 = (row + 3) % numRows;
-				
-				byte mixedValue;
-				byte intermediateValue;
-				
-				// @formatter:off
-				mixedValue = RijndaelField.multiply(data[row][column], 0x02);
-				
-				intermediateValue = RijndaelField.multiply(data[nextRow][column], 0x03);
-				mixedValue = RijndaelField.add(mixedValue, intermediateValue);
-				
-				mixedValue = RijndaelField.add(mixedValue, data[row2][column]);
-				mixedValue = RijndaelField.add(mixedValue, data[row3][column]);
-				// @formatter:on
-				
-				mixedColumn[row] = mixedValue;
-			}
+			byte[] currentColumn = extractColumn(column);
 			
-			// Copy mixedColumn into data column
-			for (int row = 0; row < numRows; row++)
+			for (int row = 0; row < blockType.numberOfRows(); row++)
 			{
-				data[row][column] = mixedColumn[row];
+				// @formatter:off
+				byte[] products = RijndaelField.products(mixColumnConstant, currentColumn);
+				byte mixedValue = RijndaelField.sum(products);
+				
+				data[row][column] = mixedValue;
+				Blocks.shiftWordRight(mixColumnConstant, 1);
+				// @formatter:on
 			}
 		}
+	}
+	
+	/**
+	 * Returns a byte[] representation of a column of this data block.
+	 * 
+	 * @param columnIndex
+	 *            Index of the column to extract; 0 indexed; read left to right
+	 * @return byte[] representation of the specified column
+	 */
+	private byte[] extractColumn(int columnIndex)
+	{
+		byte[] column = new byte[blockType.numberOfRows()];
+		
+		for (int rowIndex = 0; rowIndex < column.length; rowIndex++)
+		{
+			column[rowIndex] = this.data[rowIndex][columnIndex];
+		}
+		
+		return column;
 	}
 	
 	/**
