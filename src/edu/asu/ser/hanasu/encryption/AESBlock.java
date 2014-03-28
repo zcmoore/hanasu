@@ -276,6 +276,61 @@ public class AESBlock
 	}
 	
 	/**
+	 * Reverses the operation done by {@link #mixColumns()}. If a block calls
+	 * {@link #mixColumns()} and directly afterwards calls
+	 * {@link #inverseMixColumns()}, then it should be reverted to its original
+	 * state.
+	 */
+	public void inverseMixColumns()
+	{
+		if (this.blockType != AESBlockType.BIT_128)
+		{
+			// TODO: add support for 192 and 256-bit AES
+			throw new NotImplementedException();
+		}
+		
+		byte[] mixColumnConstant = new byte[] { 0x0E, 0x0B, 0x0D, 0x09 };
+		multiplyMixConstant(mixColumnConstant);
+	}
+	
+	/**
+	 * Performs pseudo-matrix multiplication between this data block (
+	 * {@link #data}) and a 'matrix' that is 'generated' using the given input
+	 * array. Note: the array should be a single row of the multiplicand matrix,
+	 * and as such, its length should equal the number of columns (i.e. the word
+	 * length) of this block.
+	 * 
+	 * The multiplicand matrix is defined as a matrix where each row is equal to
+	 * the base row (i.e. the input) shifted to the right by an amount equal to
+	 * the row index (index 0 is shifted 0 times, index 1 is shifted once, etc).
+	 * In this implementation, the multiplicand matrix is not generated before
+	 * hand, but rather it is simulated by shifting the base row by 1 after each
+	 * iteration. Therefore, overhead for the baseRow is no more than that
+	 * consumed by the input array.
+	 * 
+	 * @param mixColumnConstant
+	 *            The base row, used to simulate the multiplicand matrix.
+	 */
+	private void multiplyMixConstant(byte[] mixColumnConstant)
+	{
+		for (int column = 0; column < blockType.numberOfColumns(); column++)
+		{
+			byte[] currentColumn = extractColumn(column);
+			
+			for (int row = 0; row < blockType.numberOfRows(); row++)
+			{
+				// @formatter:off
+				byte[] products = RijndaelField.products(mixColumnConstant, currentColumn);
+				byte mixedValue = RijndaelField.sum(products);
+				
+				data[row][column] = mixedValue;
+				Blocks.shiftWordRight(mixColumnConstant, 1);
+				// @formatter:on
+			}
+		}
+	}
+	
+	/**
 	 * Returns a byte[] representation of a column of this data block.
 	 * 
 	 * @param columnIndex
@@ -292,38 +347,6 @@ public class AESBlock
 		}
 		
 		return column;
-	}
-	
-	/**
-	 * Reverses the operation done by {@link #mixColumns()}. If a block calls
-	 * {@link #mixColumns()} and directly afterwards calls
-	 * {@link #inverseMixColumns()}, then it should be reverted to its original
-	 * state.
-	 */
-	public void inverseMixColumns()
-	{
-		if (this.blockType != AESBlockType.BIT_128)
-		{
-			// TODO: add support for 192 and 256-bit AES
-			throw new NotImplementedException();
-		}
-		
-		byte[] mixColumnConstant = new byte[] { 0x0E, 0x0B, 0x0D, 0x09 };
-		for (int column = 0; column < blockType.numberOfColumns(); column++)
-		{
-			byte[] currentColumn = extractColumn(column);
-			
-			for (int row = 0; row < blockType.numberOfRows(); row++)
-			{
-				// @formatter:off
-				byte[] products = RijndaelField.products(mixColumnConstant, currentColumn);
-				byte mixedValue = RijndaelField.sum(products);
-				
-				data[row][column] = mixedValue;
-				Blocks.shiftWordRight(mixColumnConstant, 1);
-				// @formatter:on
-			}
-		}
 	}
 	
 	/**
