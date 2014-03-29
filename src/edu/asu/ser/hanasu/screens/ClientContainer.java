@@ -1,20 +1,18 @@
 package edu.asu.ser.hanasu.screens;
 
 import java.awt.Dimension;
-import java.awt.EventQueue;
+import java.awt.GridLayout;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import java.awt.GridLayout;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-
 @SuppressWarnings("serial")
 public class ClientContainer extends JFrame
 {
-	private static JScrollPane scrollPane;
+	private JScrollPane scrollPane;
 	private JPanel innerPane;
 	
 	/**
@@ -31,17 +29,11 @@ public class ClientContainer extends JFrame
 		scrollPane = new JScrollPane(innerPane);
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-		scrollPane.setSize(450, 300);
-		scrollPane.getViewport().setSize(450, 300);
 		setContentPane(scrollPane);
 		
 		MainScreen mainScreen = new MainScreen();
 		mainScreen.setPreferredSize(new Dimension(450, 300));
 		innerPane.add(mainScreen);
-		
-		ChannelScreen channelScreen = new ChannelScreen();
-		channelScreen.setPreferredSize(new Dimension(450, 300));
-		innerPane.add(channelScreen);
 		
 		this.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent e) {
@@ -50,9 +42,16 @@ public class ClientContainer extends JFrame
         });
 	}
 	
-	public static JScrollPane getScrollPane()
+	public JScrollPane getScrollPane()
 	{
 		return scrollPane;
 	}
+
+	public JPanel getInnerPane()
+	{
+		return innerPane;
+	}
+	
+	
 	
 }
