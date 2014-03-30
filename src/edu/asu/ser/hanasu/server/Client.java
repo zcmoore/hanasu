@@ -2,12 +2,16 @@ package edu.asu.ser.hanasu.server;
 
 import java.net.*;
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
+
+import edu.asu.ser.hanasu.server.Command.Commands;
 
 public class Client
 {
 	private ObjectInputStream objectInputStream;
 	private ObjectOutputStream objectOutputStream;
+	private SimpleDateFormat simpleDateFormat;
 	private Socket clientSocket;
 	
 	private ClientGUI clientGUI;
@@ -15,17 +19,13 @@ public class Client
 	private String serverAddress, username;
 	private int portNumber;
 	
-	public Client(String server, int port, String username)
-	{
-		this(server, port, username, null);
-	}
-	
 	public Client(String server, int port, String username, ClientGUI cg)
 	{
 		this.serverAddress = server;
 		this.portNumber = port;
 		this.username = username;
 		this.clientGUI = cg;
+		simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
 	}
 	
 	public boolean start()
@@ -39,7 +39,6 @@ public class Client
 			displayNonMessage("Error connectiong to server:" + exception);
 			return false;
 		}
-		
 		String msg = "Connection accepted " + clientSocket.getInetAddress()
 				+ ":" + clientSocket.getPort();
 		displayNonMessage(msg);
@@ -53,49 +52,91 @@ public class Client
 		}
 		catch (IOException ioException)
 		{
+			System.err.println("Stuff wrong here.");
 			displayNonMessage("IOException creating new Input/output Streams: "
 					+ ioException);
 			return false;
 		}
+		catch (Exception exception)
+		{
+			exception.printStackTrace();
+			return false;
+		}
 		
 		new ListenFromServer().start();
+		
 		try
 		{
-			objectOutputStream.writeObject(username);
+			sendChannelRequest(clientGUI.getChannelName());
 		}
 		catch (IOException ioException)
 		{
-			displayNonMessage("Exception doing login : " + ioException);
-			disconnect();
+			displayNonMessage("IOException " + ioException);
 			return false;
 		}
+		catch (Exception exception)
+		{
+			exception.printStackTrace();
+			return false;
+		}
+		
 		return true;
+	}
+	
+	private void sendChannelRequest(String channelName) throws IOException
+	{
+		Command channelRequestCommand = new Command(Commands.CHANNEL_REQUEST);
+		channelRequestCommand.setReturnedString(channelName);
+		objectOutputStream.writeObject(channelRequestCommand);
 	}
 	
 	private void displayNonMessage(String msg)
 	{
-		if (clientGUI == null)
-			System.out.println(msg);
-		else
-			clientGUI.append(msg + "\n");
+		clientGUI.append(msg + "\n");
 	}
 	
-	boolean sendMessageToServer(EncryptedMessage msg)
+	boolean sendMessageToServer(Object messageToSend)
 	{
 		try
 		{
-			objectOutputStream.writeObject(msg);
+			if (messageToSend instanceof Command)
+			{
+				objectOutputStream.writeObject(messageToSend);
+			}
+			else if (messageToSend instanceof EncryptedMessage)
+			{
+				// Puts username on message
+				EncryptedMessage unencryptedMessage = (EncryptedMessage) messageToSend;
+				byte[] messageWUserName = (username + ": "
+						+ new String(unencryptedMessage.getMessage()) + "\n")
+						.getBytes("UTF-8");
+				// TODO Encryption call HERE on messageWUserName
+				byte[] encryptedMessage = messageWUserName;
+				
+				if (unencryptedMessage.getIDOrString() instanceof String)
+				{
+					EncryptedMessage encryptedMessageToSend = new EncryptedMessage(
+							encryptedMessage,
+							unencryptedMessage.getIDOrString());
+					objectOutputStream.writeObject(encryptedMessageToSend);
+				}
+				if (unencryptedMessage.getIDOrString() instanceof Integer)
+				{
+					throw new Exception("Clients dont send ID's.");
+				}
+			}
 		}
 		catch (IOException ioException)
 		{
 			displayNonMessage("Exception writing to server: " + ioException);
 			return false;
 		}
-		catch(Exception exception)
+		catch (Exception exception)
 		{
 			displayNonMessage(exception.toString());
 			return false;
 		}
+		
 		return true;
 	}
 	
@@ -134,74 +175,6 @@ public class Client
 		
 	}
 	
-	public static void main(String[] args) throws UnknownHostException
-	{
-		int portNumber = 443;
-		String serverAddress = "localhost";
-		String userName = "Anonymous";
-		
-		switch (args.length)
-		{
-			case 3:
-				serverAddress = args[2];
-			case 2:
-				try
-				{
-					portNumber = Integer.parseInt(args[1]);
-				}
-				catch (Exception e)
-				{
-					System.out.println("Invalid port number.");
-					System.out
-							.println("Usage is: > java Client [username] [portNumber] [serverAddress]");
-					return;
-				}
-			case 1:
-				userName = args[0];
-			case 0:
-				break;
-			default:
-				System.out
-						.println("Usage is: > java Client [username] [portNumber] {serverAddress]");
-				return;
-		}
-		Client client = new Client(serverAddress, portNumber, userName);
-		
-		if (!client.start())
-			return;
-		
-		Scanner scan = new Scanner(System.in);
-		
-		while (true)
-		{
-			System.out.print("> ");
-			String message = scan.nextLine();
-			byte[] unencryptedMessage = null;
-			
-			//TODO fix sendTo address
-			if (message.equalsIgnoreCase("LOGOUT"))
-			{
-				client.sendMessageToServer(new EncryptedMessage(
-						EncryptedMessage.LOGOUT, unencryptedMessage, InetAddress.getByName("localhost")));
-				break;
-			}
-			else if (message.equalsIgnoreCase("WHOISIN"))
-			{
-				client.sendMessageToServer(new EncryptedMessage(
-						EncryptedMessage.CLIENTSCONNECTED, unencryptedMessage, InetAddress.getByName("localhost")));
-			}
-			else
-			{
-				// TODO encrypt call
-				byte[] encryptedMessage = unencryptedMessage;
-				client.sendMessageToServer(new EncryptedMessage(
-						EncryptedMessage.MESSAGE, encryptedMessage, InetAddress.getByName("localhost")));
-			}
-		}
-		client.disconnect();
-		scan.close();
-	}
-	
 	class ListenFromServer extends Thread
 	{
 		
@@ -211,21 +184,39 @@ public class Client
 			{
 				try
 				{
-					EncryptedMessage encryptedMessage = (EncryptedMessage) objectInputStream.readObject();
-					// TODO decrypt call and attach date/time received
-					clientGUI.append(new String(encryptedMessage.getMessage()));
+					Object message = objectInputStream.readObject();
+					if (message instanceof Command)
+					{
+						Command incomingCommand = (Command) message;
+						clientGUI.append(simpleDateFormat.format(new Date())
+								+ " " + incomingCommand.getReturnedString());
+					}
+					else if (message instanceof EncryptedMessage)
+					{
+						EncryptedMessage incomingMessage = (EncryptedMessage) message;
+						// TODO decrypt call
+						byte[] unencryptedMessage = incomingMessage
+								.getMessage();
+						clientGUI.append(simpleDateFormat.format(new Date())
+								+ " " + new String(unencryptedMessage));
+					}
 				}
 				catch (IOException ioException)
 				{
 					displayNonMessage("Server has close the connection: "
 							+ ioException);
-					if (clientGUI != null)
-						clientGUI.connectionFailed();
+					clientGUI.connectionFailed();
 					break;
 				}
 				catch (ClassNotFoundException classNotFoundException)
 				{
 					classNotFoundException.printStackTrace();
+					break;
+				}
+				catch (Exception exception)
+				{
+					exception.printStackTrace();
+					break;
 				}
 			}
 		}

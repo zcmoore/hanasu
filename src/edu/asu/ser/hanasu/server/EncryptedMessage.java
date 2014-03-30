@@ -3,41 +3,31 @@ package edu.asu.ser.hanasu.server;
 import java.io.*;
 import java.net.InetAddress;
 
+@SuppressWarnings("serial")
 public class EncryptedMessage implements Serializable
 {
-	// Generated serial id
-	private static final long serialVersionUID = 9171419644778126526L;
 	
-	static final int CLIENTSCONNECTED = 0, MESSAGE = 1, LOGOUT = 2;
-	private int type;
+	private byte[] encryptedMessage;
 	
-	// IP to send to via server send method
-	private InetAddress sendTo;
+	//Object to be a string for channel name
+	//or int for ID
+	private Object stringOrID;
 	
-	// Encrypted Message
-	private byte[] message;
 	
-	// constructor
-	EncryptedMessage(int type, byte[] message, InetAddress sendTo)
+	public EncryptedMessage(byte[] message, Object id)
 	{
-		this.type = type;
-		this.message = message;
-		this.sendTo = sendTo;
-		
-	}
-	
-	public InetAddress getSendTo()
-	{
-		return sendTo;
-	}
-	
-	public int getType()
-	{
-		return type;
+		this.encryptedMessage = message;
+		this.stringOrID = id;
 	}
 	
 	public byte[] getMessage()
 	{
-		return message;
+		return encryptedMessage;
 	}
+	
+	public Object getIDOrString()
+	{
+		return stringOrID;
+	}
+	
 }
