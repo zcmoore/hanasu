@@ -1,5 +1,6 @@
 package edu.asu.ser.hanasu.screens;
 
+import java.awt.Dimension;
 import java.awt.Image;
 
 public class ScreenManager
@@ -9,11 +10,17 @@ public class ScreenManager
 	
 	private MainScreen mainScreen;
 	private ChannelScreen channelScreen;
-	
-	// TODO: add chat screen
+	private ChatScreen chatScreen;
 	
 	private ScreenManager()
 	{
+		mainScreen = new MainScreen();
+		channelScreen = new ChannelScreen();
+		chatScreen = new ChatScreen();
+		
+		mainScreen.setPreferredSize(new Dimension(450, 300));
+		channelScreen.setPreferredSize(new Dimension(450, 300));
+		chatScreen.setPreferredSize(new Dimension(450, 300));
 	}
 	
 	public static ScreenManager createManager()
@@ -24,11 +31,6 @@ public class ScreenManager
 			activeManager = newManager;
 		
 		return newManager;
-	}
-	
-	public static void transition(Screen destination)
-	{
-		ClientContainer.transition(destination);
 	}
 	
 	public static Image getBarImage()
@@ -70,5 +72,14 @@ public class ScreenManager
 	{
 		this.channelScreen = channelScreen;
 	}
-	
+
+	public ChatScreen getChatScreen()
+	{
+		return chatScreen;
+	}
+
+	public void setChatScreen(ChatScreen chatScreen)
+	{
+		this.chatScreen = chatScreen;
+	}
 }

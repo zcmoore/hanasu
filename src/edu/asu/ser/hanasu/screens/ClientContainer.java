@@ -2,6 +2,7 @@ package edu.asu.ser.hanasu.screens;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -57,10 +58,10 @@ public class ClientContainer extends JFrame implements Singleton
 		}
 	}
 	
-	public static ClientContainer create()
+	public static ClientContainer create(Screen initialScreen)
 	{
 		if (activeClient == null)
-			activeClient = new ClientContainer();
+			activeClient = new ClientContainer(initialScreen);
 		else
 			throw new IllegalStateException("ClientContiner is Singleton");
 		
@@ -70,24 +71,24 @@ public class ClientContainer extends JFrame implements Singleton
 	/**
 	 * Create the frame.
 	 */
-	private ClientContainer()
+	private ClientContainer(Screen initialScreen)
 	{
+		Insets insets = getInsets();
+		int boundWidth = 450 + insets.left + insets.right;
+		int boundHeight = 300 + insets.top + insets.bottom;
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450 + 16, 300 + 38);
+		setBounds(100, 100, boundWidth, boundHeight);
 		innerPane = new JPanel();
 		innerPane.setSize(900, 300);
 		innerPane.setLayout(new GridLayout(1, 0, 0, 0));
 		
 		scrollPane = new JScrollPane(innerPane);
-		scrollPane
-				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		scrollPane
-				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 		setContentPane(scrollPane);
 		
-		MainScreen mainScreen = new MainScreen();
-		mainScreen.setPreferredSize(new Dimension(450, 300));
-		innerPane.add(mainScreen);
+		initialScreen.setPreferredSize(new Dimension(450, 300));
+		innerPane.add(initialScreen);
 		
 		this.addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent e)
@@ -101,11 +102,17 @@ public class ClientContainer extends JFrame implements Singleton
 	
 	public static void transition(JPanel destination)
 	{
-		JPanel panel = activeClient.innerPane;
-		destination.setPreferredSize(new Dimension(450, 300));
-		panel.add(destination);
+		JPanel currentPanel = (JPanel) activeClient.innerPane.getComponent(0);
 		
-		transitionTimer.start();
+		if (currentPanel != destination)
+		{
+			System.out.println("Transition Start");
+			JPanel panel = activeClient.innerPane;
+			destination.setPreferredSize(new Dimension(450, 300));
+			panel.add(destination);
+			
+			transitionTimer.start();
+		}
 	}
 	
 	public static ClientContainer getActiveClient()
