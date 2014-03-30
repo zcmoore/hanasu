@@ -5,19 +5,29 @@ import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import edu.asu.ser.hanasu.server.Command.Commands;
+
 public class Server
 {
+	// TODO replace with hash function
 	private static int uniqueId;
-	private ArrayList<ClientThread> clientList;
+	
+	private HashMap<Integer, ClientThread> allClientIDMap;
+	private HashMap<String, ClientThread> channelsMap;
+	
 	private NewServerGUI serverGUI;
 	private int portNumber;
 	private boolean keepGoing;
+	private SimpleDateFormat simpleDateFormat;
 	
-	public Server(int port, NewServerGUI sg)
+	public Server(int portNumber, NewServerGUI serverGUI)
 	{
-		this.serverGUI = sg;
-		this.portNumber = port;
-		clientList = new ArrayList<ClientThread>();
+		this.serverGUI = serverGUI;
+		this.portNumber = portNumber;
+		allClientIDMap = new HashMap<Integer, ClientThread>();
+		channelsMap = new HashMap<String, ClientThread>();
+		simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+		
 	}
 	
 	public void start()
@@ -29,7 +39,7 @@ public class Server
 			
 			while (keepGoing)
 			{
-				displayMessageOnGUI("Server waiting for Clients on port "
+				displayMessageOnGUI("Server waiting for Channels on port "
 						+ portNumber + ".");
 				
 				Socket socket = serverSocket.accept();
@@ -38,13 +48,13 @@ public class Server
 					break;
 				
 				ClientThread clientThread = new ClientThread(socket);
-				clientList.add(clientThread);
 				clientThread.start();
+				allClientIDMap.put(clientThread.uniqueClientID, clientThread);
 			}
 			try
 			{
 				serverSocket.close();
-				for (ClientThread clientThreadVar : clientList)
+				for (ClientThread clientThreadVar : allClientIDMap.values())
 				{
 					try
 					{
@@ -56,18 +66,30 @@ public class Server
 					{
 						ioException.printStackTrace();
 					}
+					catch (Exception exception)
+					{
+						exception.printStackTrace();
+					}
 				}
 			}
 			catch (Exception e)
 			{
-				displayMessageOnGUI("Exception closing the server and clients: "
+				displayMessageOnGUI("Exception closing the server and channels: "
 						+ e);
 			}
+		}
+		catch (ClassCastException exception)
+		{
+			exception.printStackTrace();
 		}
 		catch (IOException e)
 		{
 			String messageTemp = "IOException on new ServerSocket: " + e + "\n";
 			displayMessageOnGUI(messageTemp);
+		}
+		catch (Exception exception)
+		{
+			displayMessageOnGUI(exception.toString());
 		}
 	}
 	
@@ -87,43 +109,15 @@ public class Server
 	private void displayMessageOnGUI(String string)
 	{
 		serverGUI.writeToEventTextArea(string + "\n");
-		
-	}
-	
-	private synchronized void outputMessageToClient(EncryptedMessage message)
-	{
-		String encryptedmessageWUserName = new String(message.getMessage());
-		// Implies encryption is turned off
-		if (serverGUI.getDebuggingStatus())
-		{
-			// Username is attached in run() method
-			serverGUI.writeToDebugTextArea(encryptedmessageWUserName);
-			
-		}
-		
-		// decrementing loop in case of client disconnect
-		for (int index = clientList.size(); --index >= 0;)
-		{
-			ClientThread clientThreadVar = clientList.get(index);
-			
-			if(clientThreadVar.getClientSocket().getInetAddress().getHostAddress() == message.getSendTo().getHostAddress())
-				if (!clientThreadVar.writeMessage(encryptedmessageWUserName))
-				{
-					clientList.remove(index);
-					displayMessageOnGUI("Disconnected Client "
-							+ clientThreadVar.username + " removed from list.");
-				}
-			
-		}
 	}
 	
 	synchronized void remove(int id)
 	{
-		for (ClientThread clientThreadVar : clientList)
+		for (ClientThread clientThreadVar : allClientIDMap.values())
 		{
-			if (clientThreadVar.clientUniqueID == id)
+			if (clientThreadVar.uniqueClientID == id)
 			{
-				clientList.remove(clientThreadVar);
+				allClientIDMap.remove(clientThreadVar);
 				return;
 			}
 		}
@@ -134,14 +128,14 @@ public class Server
 		Socket clientSocket;
 		ObjectInputStream objectInputStream;
 		ObjectOutputStream objectOutputStream;
-		int clientUniqueID;
+		int uniqueClientID;
 		String username;
-		EncryptedMessage chatMessage;
+		Object chatMessage;
 		String date;
 		
-		public ClientThread(Socket socketParam)
+		public ClientThread(Socket socketParam) throws Exception
 		{
-			clientUniqueID = ++uniqueId;
+			uniqueClientID = ++uniqueId;
 			this.clientSocket = socketParam;
 			
 			System.out
@@ -152,33 +146,63 @@ public class Server
 						clientSocket.getOutputStream());
 				objectInputStream = new ObjectInputStream(
 						clientSocket.getInputStream());
-				username = (String) objectInputStream.readObject();
+				Object incomingMessage = objectInputStream.readObject();
+				username = "" + uniqueClientID;
+				if (incomingMessage instanceof Command)
+				{
+					switch (((Command) incomingMessage).getCommand())
+					{
+						case CHANNEL:
+							String channelNameString = ((Command) incomingMessage)
+									.getReturnedString().toLowerCase();
+							if (!(channelsMap.containsKey(channelNameString)))
+								channelsMap.put(channelNameString, this);
+							break;
+						case CHANNEL_REQUEST:
+							if (channelsMap
+									.containsKey(((Command) incomingMessage)
+											.getReturnedString().toLowerCase()))
+							{
+								ClientThread channelThread = channelsMap
+										.get(((Command) incomingMessage)
+												.getReturnedString()
+												.toLowerCase());
+								byte[] message = null;
+								EncryptedMessage channelRequest = new EncryptedMessage(
+										message, uniqueClientID);
+								channelThread.objectOutputStream
+										.writeObject(channelRequest);
+							}
+							break;
+						default:
+							break;
+					}
+				}
+				else
+				{
+					throw new Exception("Dumb Shit");
+				}
 				displayMessageOnGUI(username + " just connected.");
 			}
-			catch (IOException e)
+			catch (IOException ioException)
 			{
 				displayMessageOnGUI("IOException creating new Input/output Streams: "
-						+ e);
+						+ ioException);
 				return;
-			}
-			catch (ClassNotFoundException e)
-			{
-				e.printStackTrace();
 			}
 			date = new Date().toString() + "\n";
 		}
 		
 		public void run()
 		{
-			// to loop until LOGOUT
+			// to loop until LOGOUT message
 			boolean keepGoing = true;
+			
 			while (keepGoing)
 			{
 				try
 				{
-					chatMessage = (EncryptedMessage) objectInputStream
-							.readObject();
-					
+					chatMessage = objectInputStream.readObject();
 				}
 				catch (IOException ioException)
 				{
@@ -191,42 +215,138 @@ public class Server
 					classNotFoundException.printStackTrace();
 					break;
 				}
-				
-				if (chatMessage != null)
+				catch (Exception exception)
 				{
-					String message = new String(username + ": " + new String(chatMessage.getMessage()) + ".\n");
-					
-					switch (chatMessage.getType())
+					exception.printStackTrace();
+					System.err.println("You done goofed. "
+							+ exception.toString());
+					break;
+				}
+				
+				if (chatMessage instanceof Command)
+				{
+					Command incomingCommand = (Command) chatMessage;
+					switch (incomingCommand.getCommand())
 					{
-					
-						case EncryptedMessage.MESSAGE:
-							outputMessageToClient(
-									new EncryptedMessage(
-											EncryptedMessage.MESSAGE,
-											message.getBytes(),
-											chatMessage.getSendTo()));
-							break;
-						case EncryptedMessage.LOGOUT:
+						case LOGOUT:
 							displayMessageOnGUI(username
-									+ " disconnected with a LOGOUT message.");
+									+ "Disconnected with a Logout Message");
 							keepGoing = false;
-							break;
-						case EncryptedMessage.CLIENTSCONNECTED:
-							writeMessage("List of the users connected at "
-									+ new SimpleDateFormat().format(new Date())
-									+ "\n");
-							
-							for (int index = 0; index < clientList.size(); ++index)
+							Command commandToSend = new Command(Commands.LOGOUT);
+							commandToSend.setReturnedString("Logged Out");
+							try
 							{
-								ClientThread ct = clientList.get(index);
-								writeMessage((index + 1) + ") " + ct.username
-										+ " since " + ct.date);
+								objectOutputStream.writeObject(commandToSend);
 							}
+							catch (IOException ioException)
+							{
+								ioException.printStackTrace();
+							}
+							break;
+						case REMOVAL:
+							if (channelsMap.containsKey(incomingCommand
+									.getReturnedString()))
+							{
+								Command removalCommand = new Command(
+										Commands.REMOVAL);
+								removalCommand.setReturnedString(Integer
+										.toString(uniqueClientID));
+								
+								ClientThread clientThread = channelsMap
+										.get(incomingCommand
+												.getReturnedString());
+								try
+								{
+									clientThread.objectOutputStream.writeObject(removalCommand);
+								}
+								catch (IOException ioException)
+								{
+									ioException.printStackTrace();
+								}
+							}
+							
+							break;
+						default:
 							break;
 					}
 				}
+				else if (chatMessage instanceof EncryptedMessage)
+				{
+					if (((EncryptedMessage) chatMessage).getIDOrString() instanceof String)
+					{
+						
+						try
+						{
+							// loop up channel in map
+							String channelName = ((String) ((EncryptedMessage) chatMessage)
+									.getIDOrString()).toLowerCase();
+							
+							if (channelsMap.containsKey(channelName))
+							{
+								ClientThread clientThread = channelsMap
+										.get(channelName);
+								clientThread.objectOutputStream
+										.writeObject(new EncryptedMessage(
+												((EncryptedMessage) chatMessage)
+														.getMessage(),
+												this.uniqueClientID));
+								if (serverGUI.getDebuggingStatus())
+								{
+									serverGUI.writeToDebugTextArea(new String(
+											((EncryptedMessage) chatMessage)
+													.getMessage()));
+								}
+							}
+							else
+							{
+								return;
+							}
+						}
+						catch (IOException ioException)
+						{
+							ioException.printStackTrace();
+							break;
+						}
+						catch (Exception exception)
+						{
+							exception.printStackTrace();
+							System.err.println("You done goofed "
+									+ exception.toString());
+							break;
+						}
+					}
+					else if (((EncryptedMessage) chatMessage).getIDOrString() instanceof Integer)
+					{
+						try
+						{
+							// look up client in maps
+							if (allClientIDMap
+									.containsKey(((EncryptedMessage) chatMessage)
+											.getIDOrString()))
+							{
+								ClientThread clientThread = allClientIDMap
+										.get(((EncryptedMessage) chatMessage)
+												.getIDOrString());
+								clientThread.objectOutputStream
+										.writeObject(chatMessage);
+							}
+							
+						}
+						catch (IOException ioException)
+						{
+							ioException.printStackTrace();
+							break;
+						}
+						catch (Exception exception)
+						{
+							System.err.println("You done goofed "
+									+ exception.toString());
+							break;
+						}
+					}
+				}
 			}
-			remove(clientUniqueID);
+			remove(uniqueClientID);
 			close();
 		}
 		
@@ -259,36 +379,6 @@ public class Server
 			{
 				displayMessageOnGUI(exception.toString());
 			}
-		}
-		
-		// What actually sends messages to clients
-		private boolean writeMessage(String message)
-		{
-			if (!clientSocket.isConnected())
-			{
-				close();
-				return false;
-			}
-			
-			try
-			{
-				objectOutputStream.writeObject(new EncryptedMessage(
-						EncryptedMessage.MESSAGE, message.getBytes(),
-						InetAddress.getByName("")));
-				
-			}
-			catch (IOException e)
-			{
-				displayMessageOnGUI("Error sending message to " + username);
-				displayMessageOnGUI(e.toString());
-			}
-			
-			return true;
-		}
-		
-		private Socket getClientSocket()
-		{
-			return clientSocket;
 		}
 	}
 }

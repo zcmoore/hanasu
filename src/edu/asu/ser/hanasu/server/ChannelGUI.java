@@ -2,39 +2,35 @@ package edu.asu.ser.hanasu.server;
 /*
  * Test purposes only
  */
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.UnsupportedEncodingException;
+
 import javax.swing.*;
 
 import edu.asu.ser.hanasu.server.Command.Commands;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 @SuppressWarnings("serial")
-public class ClientGUI extends JFrame implements ActionListener
+public class ChannelGUI extends JFrame implements ActionListener
 {
-	
 	private JLabel label;
 	// to hold the Username and later on the messages
 	private JTextField tf;
 	private JTextField tfServer, tfPort;
-	private JButton login, logout, whoIsIn;
+	private JButton login, logout;
 	private JTextArea chatRoom;
-	private boolean connected;
-	private Client client;
-	private int defaultPort;
-	private String defaultHost;
-	private String channelName;
+	private Channel channel;
+	private int defaultPortNumber;
+	private String hostName;
+	boolean connected;
 	
-	public ClientGUI(String host, int port, String channelName)
+	public ChannelGUI(String host, int port)
 	{
 		
 		super("Chat Client");
-		this.defaultPort = port;
-		this.defaultHost = host;
-		this.channelName = channelName;
+		this.defaultPortNumber = port;
+		this.hostName = host;
 		
 		// The NorthPanel with:
 		JPanel northPanel = new JPanel(new GridLayout(3, 1));
@@ -57,7 +53,7 @@ public class ClientGUI extends JFrame implements ActionListener
 		// the Label and the TextField
 		label = new JLabel("Enter your username below", SwingConstants.CENTER);
 		northPanel.add(label);
-		tf = new JTextField("Anonymous");
+		tf = new JTextField("Channel X");
 		tf.setBackground(Color.WHITE);
 		northPanel.add(tf);
 		add(northPanel, BorderLayout.NORTH);
@@ -76,15 +72,10 @@ public class ClientGUI extends JFrame implements ActionListener
 		logout.addActionListener(this);
 		logout.setEnabled(false); // you have to login before being able to
 									// logout
-		whoIsIn = new JButton("Who is in");
-		whoIsIn.addActionListener(this);
-		whoIsIn.setEnabled(false); // you have to login before being able to Who
-									// is in
 		
 		JPanel southPanel = new JPanel();
 		southPanel.add(login);
 		southPanel.add(logout);
-		southPanel.add(whoIsIn);
 		add(southPanel, BorderLayout.SOUTH);
 		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -98,7 +89,7 @@ public class ClientGUI extends JFrame implements ActionListener
 	void append(String str)
 	{
 		chatRoom.append(str);
-		chatRoom.setCaretPosition(chatRoom.getText().length());
+		chatRoom.setCaretPosition(chatRoom.getText().length() - 1);
 	}
 	
 	// called by the GUI is the connection failed
@@ -107,12 +98,11 @@ public class ClientGUI extends JFrame implements ActionListener
 	{
 		login.setEnabled(true);
 		logout.setEnabled(false);
-		whoIsIn.setEnabled(false);
 		label.setText("Enter your username below");
-		tf.setText("Anonymous");
+		tf.setText("Channel Name");
 		// reset port number and host name as a construction time
-		tfPort.setText("" + defaultPort);
-		tfServer.setText(defaultHost);
+		tfPort.setText("" + defaultPortNumber);
+		tfServer.setText(hostName);
 		// let the user change them
 		tfServer.setEditable(false);
 		tfPort.setEditable(false);
@@ -130,44 +120,11 @@ public class ClientGUI extends JFrame implements ActionListener
 		
 		try
 		{
-			byte[] unencryptedMessage;
-			unencryptedMessage = tf.getText().getBytes("UTF-8");
-			
-			try
+			if (o == logout)
 			{
-				if (o == logout)
-				{
-					Command removalCommand = new Command(Commands.REMOVAL);
-					removalCommand.setReturnedString(channelName);
-					client.sendMessageToServer(removalCommand);
-					client.sendMessageToServer(new Command(Commands.LOGOUT));
-					
-					return;
-				}
-				
-				// if it the who is in button
-				if (o == whoIsIn)
-				{
-					client.sendMessageToServer(new Command(Commands.CLIENTS_CONNECTED));
-					return;
-				}
-				
-				// it is coming from the JTextField
-				if (connected)
-				{
-					client.sendMessageToServer(new EncryptedMessage(unencryptedMessage, channelName));
-					tf.setText("");
-					return;
-				}
+				channel.sendMessageToServer(new Command(Commands.LOGOUT));
+				return;
 			}
-			catch(Exception exception)
-			{
-				exception.printStackTrace();
-			}
-		}
-		catch (UnsupportedEncodingException e1)
-		{
-			e1.printStackTrace();
 		}
 		catch(Exception exception)
 		{
@@ -177,9 +134,9 @@ public class ClientGUI extends JFrame implements ActionListener
 		if (o == login)
 		{
 			// ok it is a connection request
-			String username = tf.getText().trim();
+			String channelName = tf.getText().trim();
 			// empty username ignore it
-			if (username.length() == 0)
+			if (channelName.length() == 0)
 				return;
 			// empty serverAddress ignore it
 			String server = tfServer.getText().trim();
@@ -200,36 +157,30 @@ public class ClientGUI extends JFrame implements ActionListener
 			}
 			
 			// try creating a new Client with GUI
-			client = new Client(server, port, username, this);
+			channel = new Channel(server, port, this, channelName);
 			// test if we can start the Client
-			if (!client.start())
+			if (!channel.start())
 				return;
 			tf.setText("");
-			label.setText("Enter your message below");
-			connected = true;
 			
+			connected = true;
 			// disable login button
 			login.setEnabled(false);
-			// enable the 2 buttons
+			
 			logout.setEnabled(true);
-			whoIsIn.setEnabled(true);
 			// disable the Server and Port JTextField
 			tfServer.setEditable(false);
 			tfPort.setEditable(false);
-			// Action listener for when the user enter a message
+
 			tf.addActionListener(this);
 		}
 		
 	}
 	
-	public String getChannelName()
-	{
-		return channelName;
-	}
-	
 	public static void main(String[] args)
 	{
-		new ClientGUI("localhost", 443, "Channel x");
+		new ChannelGUI("localhost", 443);
 	}
+	
 	
 }

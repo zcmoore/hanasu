@@ -6,13 +6,14 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.*;
+
 import javax.swing.*;
 
+@SuppressWarnings("serial")
 public class NewServerGUI extends JFrame implements ActionListener,
 		WindowListener
 {
-	// Generated serial id
-	private static final long serialVersionUID = -2318140618087709876L;
+	
 	private JPanel backPanelTop, backPanelCenter;
 	private JTextField portField;
 	private JButton startButton;
@@ -154,7 +155,7 @@ public class NewServerGUI extends JFrame implements ActionListener,
 		return isDebuggingOn;
 	}
 	
-	class ServerRunning extends Thread
+	public class ServerRunning extends Thread
 	{
 		public void run()
 		{
@@ -190,42 +191,36 @@ public class NewServerGUI extends JFrame implements ActionListener,
 	@Override
 	public void windowActivated(WindowEvent arg0)
 	{
-		// TODO Auto-generated method stub
 		
 	}
 	
 	@Override
 	public void windowClosing(WindowEvent arg0)
 	{
-		// TODO Auto-generated method stub
 		
 	}
 	
 	@Override
 	public void windowDeactivated(WindowEvent arg0)
 	{
-		// TODO Auto-generated method stub
 		
 	}
 	
 	@Override
 	public void windowDeiconified(WindowEvent arg0)
 	{
-		// TODO Auto-generated method stub
 		
 	}
 	
 	@Override
 	public void windowIconified(WindowEvent arg0)
 	{
-		// TODO Auto-generated method stub
 		
 	}
 	
 	@Override
 	public void windowOpened(WindowEvent arg0)
 	{
-		// TODO Auto-generated method stub
 		
 	}
 	
