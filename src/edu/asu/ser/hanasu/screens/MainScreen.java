@@ -7,6 +7,8 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 @SuppressWarnings("serial")
 public class MainScreen extends Screen
 {
@@ -32,11 +34,47 @@ public class MainScreen extends Screen
 			@Override
 			public void actionPerformed(ActionEvent arg0)
 			{
-				System.out.println("\nMainScreen Bounds: " + getBounds());
-				System.out.println("ScrollPane Bounds: " + ClientContainer.getScrollPane().getBounds());
-				System.out.println("Client Bounds: " + ScreenManager.getClientContainer().getBounds() + "\n");
+				ScreenManager manager = ScreenManager.getActiveManager();
+				ClientContainer.transition(manager.getMainScreen());
 			}
 		});
 	}
+
+	@Override
+	public void prepareToExit()
+	{
+		// TODO Auto-generated method stub
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void prepareToEnter()
+	{
+		// TODO Auto-generated method stub
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void reset()
+	{
+		// TODO Auto-generated method stub
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void disable()
+	{
+		// TODO Auto-generated method stub
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void enable()
+	{
+		// TODO Auto-generated method stub
+		throw new NotImplementedException();
+	}
+	
+	
 	
 }
