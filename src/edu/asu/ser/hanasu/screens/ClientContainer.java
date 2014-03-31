@@ -20,58 +20,47 @@ import edu.asu.ser.hanasu.Singleton;
 @SuppressWarnings("serial")
 public class ClientContainer extends JFrame implements Singleton
 {
-	private static Timer transitionTimer = new TransitionTimer();
-	private static ClientContainer activeClient;
+	private Timer transitionTimer = new TransitionTimer();
 	private JScrollPane scrollPane;
 	private JPanel innerPane;
 	
-	private static class TransitionTimer extends Timer
+	private class TransitionTimer extends Timer
 	{
 		public TransitionTimer()
 		{
-			super(5, new TransitionTimerListener());
+			super(5, null);
+			addActionListener(new TransitionTimerListener());
 		}
-	}
-	
-	private static class TransitionTimerListener implements ActionListener
-	{
-		@Override
-		public void actionPerformed(ActionEvent e)
-		{
-			JViewport viewport = activeClient.scrollPane.getViewport();
-			Point position = viewport.getViewPosition();
-			position.x += 5;
-			
-			if (position.x >= 450)
-			{
-				JPanel panel = activeClient.innerPane;
-				panel.remove(0);
-				
-				position.x = 0;
-				viewport.setViewPosition(position);
-				transitionTimer.stop();
-			}
-			else
-			{
-				viewport.setViewPosition(position);
-			}
-		}
-	}
-	
-	public static ClientContainer create(Screen initialScreen)
-	{
-		if (activeClient == null)
-			activeClient = new ClientContainer(initialScreen);
-		else
-			throw new IllegalStateException("ClientContiner is Singleton");
 		
-		return activeClient;
+		private class TransitionTimerListener implements ActionListener
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				JViewport viewport = scrollPane.getViewport();
+				Point position = viewport.getViewPosition();
+				position.x += 5;
+				
+				if (position.x >= 450)
+				{
+					innerPane.remove(0);
+					
+					position.x = 0;
+					viewport.setViewPosition(position);
+					TransitionTimer.this.stop();
+				}
+				else
+				{
+					viewport.setViewPosition(position);
+				}
+			}
+		}
 	}
 	
 	/**
 	 * Create the frame.
 	 */
-	private ClientContainer(Screen initialScreen)
+	public ClientContainer(Screen initialScreen)
 	{
 		Insets insets = getInsets();
 		int boundWidth = 450 + insets.left + insets.right;
@@ -100,23 +89,21 @@ public class ClientContainer extends JFrame implements Singleton
 		this.setVisible(true);
 	}
 	
-	public static void transition(JPanel destination)
+	public JPanel getCurrentPanel()
 	{
-		JPanel currentPanel = (JPanel) activeClient.innerPane.getComponent(0);
-		
-		if (currentPanel != destination)
+		JPanel currentPanel = (JPanel) innerPane.getComponent(0);
+		return currentPanel;
+	}
+	
+	public void transition(JPanel destination)
+	{
+		if (getCurrentPanel() != destination)
 		{
 			System.out.println("Transition Start");
-			JPanel panel = activeClient.innerPane;
 			destination.setPreferredSize(new Dimension(450, 300));
-			panel.add(destination);
+			innerPane.add(destination);
 			
 			transitionTimer.start();
 		}
-	}
-	
-	public static ClientContainer getActiveClient()
-	{
-		return activeClient;
 	}
 }
