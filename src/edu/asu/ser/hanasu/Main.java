@@ -20,7 +20,6 @@ public class Main
 		public void run()
 		{
 			ScreenManager initialManager = ScreenManager.createManager();
-			ClientContainer.create(initialManager.getMainScreen());
 		}
 	}
 	
