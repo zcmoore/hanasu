@@ -47,6 +47,7 @@ public class ClientContainer extends JFrame implements Singleton
 					
 					position.x = 0;
 					viewport.setViewPosition(position);
+					((Screen) getCurrentPanel()).onEnter();
 					TransitionTimer.this.stop();
 				}
 				else

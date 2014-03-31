@@ -2,30 +2,29 @@ package edu.asu.ser.hanasu.screens;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
 
-import javax.swing.Box;
 import javax.swing.JPanel;
 
-import edu.asu.ser.hanasu.screens.ScreenManager.ScreenType;
-import java.awt.Component;
+import edu.asu.ser.hanasu.screens.SidebarButton.SidebarButtonType;
 
 @SuppressWarnings("serial")
 public class Sidebar extends JPanel
 {
-	
 	/**
 	 * Create the panel.
 	 */
-	public Sidebar()
+	public Sidebar(HashMap<SidebarButtonType, ActionListener> listeners)
 	{
 		this.setPreferredSize(new Dimension(75, 300));
 		setLayout(new GridLayout(7, 1, 0, 0));
 		
 		SidebarButton sdbrbtnM = new SidebarButton("Main Screen", "M");
-		sdbrbtnM.addActionListener(new TransitionListener(ScreenType.MAIN));
+		sdbrbtnM.addActionListener(listeners.get(SidebarButtonType.MAIN_SCREEN_BUTTON));
 		
-		Component verticalGlue = Box.createVerticalGlue();
-		add(verticalGlue);
+		JPanel panel = new JPanel();
+		add(panel);
 		add(sdbrbtnM);
 		
 		SidebarButton sdbrbtnR = new SidebarButton("Recent Channel", "R1");
@@ -38,11 +37,8 @@ public class Sidebar extends JPanel
 		add(sdbrbtnR_2);
 		
 		SidebarButton sdbrbtnC = new SidebarButton("Channel Screen", "C");
-		sdbrbtnM.addActionListener(new TransitionListener(ScreenType.CHANNEL));
+		sdbrbtnC.addActionListener(listeners.get(SidebarButtonType.CHANNEL_SCREEN_BUTTON));
 		add(sdbrbtnC);
-		
-		Component verticalGlue_1 = Box.createVerticalGlue();
-		add(verticalGlue_1);
 	}
 	
 }
