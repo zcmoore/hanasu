@@ -20,9 +20,51 @@ import edu.asu.ser.hanasu.Singleton;
 @SuppressWarnings("serial")
 public class ClientContainer extends JFrame implements Singleton
 {
-	private Timer transitionTimer = new TransitionTimer();
-	private JScrollPane scrollPane;
-	private JPanel innerPane;
+	private final Timer transitionTimer;
+	private final JScrollPane scrollPane;
+	private final JPanel innerPane;
+	
+	protected Dimension outterDimension;
+	protected Dimension innerDimension;
+	
+	private class SizeAdapter extends ComponentAdapter
+	{
+		public void componentResized(ComponentEvent event)
+		{
+			JFrame newFrame = ((JFrame) event.getComponent());
+			
+			outterDimension = AspectRatio.x16_9.formatDimension(newFrame.getSize());
+			newFrame.setSize(outterDimension);
+			innerDimension = (Dimension) newFrame.getContentPane().getSize().clone();
+			
+			getCurrentPanel().setPreferredSize(innerDimension);
+			((Screen) getCurrentPanel()).resetDividers();
+			
+			ResizeTimer timer = new ResizeTimer(100);
+			timer.start();
+		}
+	}
+	
+	private class ResizeTimer extends Timer
+	{
+		public ResizeTimer(int time)
+		{
+			super(time, null);
+			addActionListener(new ResizeTimerListener());
+		}
+		
+		private class ResizeTimerListener implements ActionListener
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				System.out.println("resizing");
+				setSize(outterDimension);
+				((Screen) getCurrentPanel()).resetDividers();
+				ResizeTimer.this.stop();
+			}
+		}
+	}
 	
 	private class TransitionTimer extends Timer
 	{
@@ -34,14 +76,26 @@ public class ClientContainer extends JFrame implements Singleton
 		
 		private class TransitionTimerListener implements ActionListener
 		{
+			private double delta;
+			
+			TransitionTimerListener()
+			{
+				double stepsPerSecond = 1000 / 5;
+				double desiredTime = 0.5;
+				double totalSteps = stepsPerSecond * desiredTime;
+				double totalDelta = innerDimension.width;
+				
+				delta = totalDelta / totalSteps;
+			}
+			
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
 				JViewport viewport = scrollPane.getViewport();
 				Point position = viewport.getViewPosition();
-				position.x += 5;
+				position.x += delta;
 				
-				if (position.x >= 450)
+				if (position.x >= innerDimension.width)
 				{
 					innerPane.remove(0);
 					
@@ -80,14 +134,13 @@ public class ClientContainer extends JFrame implements Singleton
 		initialScreen.setPreferredSize(new Dimension(450, 300));
 		innerPane.add(initialScreen);
 		
-		this.addComponentListener(new ComponentAdapter() {
-			public void componentResized(ComponentEvent e)
-			{
-				e.getComponent().getHeight();
-			}
-		});
-		
+		this.addComponentListener(new SizeAdapter());
 		this.setVisible(true);
+		
+		outterDimension = new Dimension(getWidth(), getHeight());
+		innerDimension = new Dimension(getContentPane().getSize());
+		
+		transitionTimer = new TransitionTimer();
 	}
 	
 	public JPanel getCurrentPanel()
@@ -96,13 +149,14 @@ public class ClientContainer extends JFrame implements Singleton
 		return currentPanel;
 	}
 	
-	public void transition(JPanel destination)
+	public void transition(Screen destination)
 	{
 		if (getCurrentPanel() != destination)
 		{
 			System.out.println("Transition Start");
-			destination.setPreferredSize(new Dimension(450, 300));
+			destination.setPreferredSize(innerDimension);
 			innerPane.add(destination);
+			destination.resetDividers();
 			
 			transitionTimer.start();
 		}

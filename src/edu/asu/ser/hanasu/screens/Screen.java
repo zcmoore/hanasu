@@ -13,6 +13,7 @@ public abstract class Screen extends JPanel
 {
 	protected JPanel innerPane;
 	protected JSplitPane innerSplitPane;
+	protected JSplitPane verticalSplitPane;
 	
 	public Screen(Sidebar sidebar)
 	{
@@ -21,19 +22,25 @@ public abstract class Screen extends JPanel
 		
 		innerSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
 				innerPane, sidebar);
-		innerSplitPane.setDividerLocation(400);
-		hideDivider(innerSplitPane);
+		verticalSplitPane = new JSplitPane(
+				JSplitPane.VERTICAL_SPLIT, new JPanel(), innerSplitPane);
 		
-		JSplitPane verticalSplitPane = new JSplitPane(
-				JSplitPane.VERTICAL_SPLIT, new JButton(), innerSplitPane);
-		hideDivider(verticalSplitPane);
-		
+		resetDividers();
 		super.add(verticalSplitPane);
 	}
 	
 	private static void hideDivider(JSplitPane splitPane)
 	{
 		((BasicSplitPaneUI) splitPane.getUI()).getDivider().setVisible(false);
+	}
+	
+	public void resetDividers()
+	{
+		innerSplitPane.setDividerLocation(0.92);
+		hideDivider(innerSplitPane);
+		
+		verticalSplitPane.setDividerLocation(0);
+		hideDivider(verticalSplitPane);
 	}
 	
 	/**
@@ -55,7 +62,7 @@ public abstract class Screen extends JPanel
 	
 	public void onEnter()
 	{
-		innerSplitPane.setDividerLocation(400);
+		resetDividers();
 	}
 	
 	public void onExit()
