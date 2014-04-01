@@ -66,6 +66,8 @@ public class ScreenManager
 		chatScreen.setPreferredSize(new Dimension(450, 300));
 		
 		client = new ClientContainer(mainScreen);
+		
+		((Screen) client.getCurrentPanel()).resetDividers();
 	}
 	
 	public static ScreenManager createManager()
