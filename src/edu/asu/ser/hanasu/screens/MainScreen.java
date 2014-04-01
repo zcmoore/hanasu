@@ -15,7 +15,7 @@ public class MainScreen extends Screen
 		super(sidebar);
 		// Temporary/Test contents
 		// TODO: replace with actual MainScreen contents
-		setBackground(Color.GRAY);
+		innerPane.setBackground(Color.RED);
 	}
 
 	@Override

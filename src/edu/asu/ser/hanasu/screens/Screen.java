@@ -3,43 +3,36 @@ package edu.asu.ser.hanasu.screens;
 import java.awt.Component;
 import java.awt.GridLayout;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
+import javax.swing.JLayeredPane;
+
+import java.util.HashMap;
 
 @SuppressWarnings("serial")
 public abstract class Screen extends JPanel
 {
 	protected JPanel innerPane;
-	protected JSplitPane innerSplitPane;
-	protected JSplitPane verticalSplitPane;
 	
 	public Screen(Sidebar sidebar)
 	{
-		super.setLayout(new GridLayout(1, 0, 0, 0));
+		setLayout(new GridLayout(1, 0, 0, 0));
+		
+		JLayeredPane layeredPane = new JLayeredPane();
+		add(layeredPane);
+		
+		sidebar.setBounds(0, 0, 100, 300);
+		sidebar.setVisible(true);
+		layeredPane.add(sidebar, new Integer(300));
+		
 		innerPane = new JPanel();
+		innerPane.setVisible(true);
+		innerPane.setBounds(0, 0, 450, 300);
+		layeredPane.add(innerPane, new Integer(200));
 		
-		innerSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-				innerPane, sidebar);
-		verticalSplitPane = new JSplitPane(
-				JSplitPane.VERTICAL_SPLIT, new JPanel(), innerSplitPane);
-		
-		resetDividers();
-		super.add(verticalSplitPane);
-	}
-	
-	private static void hideDivider(JSplitPane splitPane)
-	{
-		((BasicSplitPaneUI) splitPane.getUI()).getDivider().setVisible(false);
-	}
-	
-	public void resetDividers()
-	{
-		innerSplitPane.setDividerLocation(0.92);
-		hideDivider(innerSplitPane);
-		
-		verticalSplitPane.setDividerLocation(0);
-		hideDivider(verticalSplitPane);
+		JLabel label = new JLabel("test");
 	}
 	
 	/**
@@ -61,12 +54,12 @@ public abstract class Screen extends JPanel
 	
 	public void onEnter()
 	{
-		resetDividers();
+		
 	}
 	
 	public void onExit()
 	{
-		resetDividers();
+		
 	}
 	
 	/**
