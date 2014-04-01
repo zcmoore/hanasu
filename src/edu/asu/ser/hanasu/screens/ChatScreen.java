@@ -3,7 +3,14 @@ package edu.asu.ser.hanasu.screens;
 @SuppressWarnings("serial")
 public class ChatScreen extends Screen
 {
-	
+	/**
+	 * Create the panel.
+	 */
+	public ChatScreen(Sidebar sidebar)
+	{
+		super(sidebar);
+	}
+
 	@Override
 	public void prepareToExit()
 	{

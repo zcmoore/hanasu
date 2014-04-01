@@ -1,7 +1,9 @@
 package edu.asu.ser.hanasu.screens;
 
 import java.awt.Color;
+import java.awt.GridLayout;
 
+import javax.swing.JLabel;
 import javax.swing.JToggleButton;
 import javax.swing.JTree;
 
@@ -14,20 +16,25 @@ public class ChannelScreen extends Screen
 	/**
 	 * Create the panel.
 	 */
-	public ChannelScreen()
+	public ChannelScreen(Sidebar sidebar)
 	{
+		super(sidebar);
 		// Temporary/Test contents
 		// TODO: replace with actual MainScreen contents
 		setBackground(Color.RED);
+		innerPane.setLayout(new GridLayout(3, 2, 0, 0));
 		
 		JTree tree = new JTree();
 		tree.setForeground(Color.RED);
 		tree.setBackground(Color.RED);
-		add(tree);
+		innerPane.add(tree);
 		
 		JToggleButton tglbtnNewToggleButton = new JToggleButton(
 				"New toggle button");
-		add(tglbtnNewToggleButton);
+		innerPane.add(tglbtnNewToggleButton);
+		
+		JLabel lblNewLabel = new JLabel("New label");
+		innerPane.add(lblNewLabel);
 		
 	}
 	
