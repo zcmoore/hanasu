@@ -3,7 +3,6 @@ package edu.asu.ser.hanasu.screens;
 import java.awt.Component;
 import java.awt.GridLayout;
 
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
@@ -67,7 +66,7 @@ public abstract class Screen extends JPanel
 	
 	public void onExit()
 	{
-		
+		resetDividers();
 	}
 	
 	/**

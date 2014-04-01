@@ -29,6 +29,7 @@ public class ClientContainer extends JFrame implements Singleton
 	
 	private class SizeAdapter extends ComponentAdapter
 	{
+		@Override
 		public void componentResized(ComponentEvent event)
 		{
 			JFrame newFrame = ((JFrame) event.getComponent());

@@ -2,7 +2,6 @@ package edu.asu.ser.hanasu;
 
 import java.awt.EventQueue;
 
-import edu.asu.ser.hanasu.screens.ClientContainer;
 import edu.asu.ser.hanasu.screens.ScreenManager;
 
 public class Main
@@ -19,7 +18,7 @@ public class Main
 	{
 		public void run()
 		{
-			ScreenManager initialManager = ScreenManager.createManager();
+			ScreenManager.createManager();
 		}
 	}
 	
