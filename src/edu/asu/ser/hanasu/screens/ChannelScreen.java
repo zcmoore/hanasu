@@ -22,19 +22,19 @@ public class ChannelScreen extends Screen
 		// Temporary/Test contents
 		// TODO: replace with actual MainScreen contents
 		setBackground(Color.RED);
-		innerPane.setLayout(new GridLayout(3, 2, 0, 0));
+		accessiblePane.setLayout(new GridLayout(3, 2, 0, 0));
 		
 		JTree tree = new JTree();
 		tree.setForeground(Color.RED);
 		tree.setBackground(Color.RED);
-		innerPane.add(tree);
+		accessiblePane.add(tree);
 		
 		JToggleButton tglbtnNewToggleButton = new JToggleButton(
 				"New toggle button");
-		innerPane.add(tglbtnNewToggleButton);
+		accessiblePane.add(tglbtnNewToggleButton);
 		
 		JLabel lblNewLabel = new JLabel("New label");
-		innerPane.add(lblNewLabel);
+		accessiblePane.add(lblNewLabel);
 		
 	}
 	

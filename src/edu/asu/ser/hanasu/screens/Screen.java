@@ -1,38 +1,58 @@
 package edu.asu.ser.hanasu.screens;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.JLayeredPane;
-
-import java.util.HashMap;
+import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
 public abstract class Screen extends JPanel
 {
-	protected JPanel innerPane;
+	private JLayeredPane layeredPane;
+	protected JPanel accessiblePane;
+	
+	private class SizeAdapter extends ComponentAdapter
+	{
+		@Override
+		public void componentResized(ComponentEvent event)
+		{
+			System.out.println("resizing");
+			JPanel newPanel = ((JPanel) event.getComponent());
+			
+			for (Component pane : layeredPane.getComponents())
+			{
+				Dimension newSize = (Dimension) newPanel.getSize().clone();
+				pane.setPreferredSize(newSize);
+			}
+		}
+	}
 	
 	public Screen(Sidebar sidebar)
 	{
 		setLayout(new GridLayout(1, 0, 0, 0));
 		
-		JLayeredPane layeredPane = new JLayeredPane();
+		layeredPane = new JLayeredPane();
 		add(layeredPane);
 		
-		sidebar.setBounds(0, 0, 100, 300);
-		sidebar.setVisible(true);
-		layeredPane.add(sidebar, new Integer(300));
+		accessiblePane = new JPanel();
+		accessiblePane.setVisible(true);
+		accessiblePane.setBounds(0, 0, 450, 300);
+		layeredPane.add(accessiblePane, new Integer(200));
 		
-		innerPane = new JPanel();
-		innerPane.setVisible(true);
-		innerPane.setBounds(0, 0, 450, 300);
-		layeredPane.add(innerPane, new Integer(200));
+		JPanel topComponentsContainer = new JPanel();
+		topComponentsContainer.setBounds(0, 0, 450, 300);
+		layeredPane.add(topComponentsContainer, new Integer(300));
 		
-		JLabel label = new JLabel("test");
+		topComponentsContainer.setLayout(new BorderLayout(0, 0));
+		topComponentsContainer.setOpaque(false);
+		topComponentsContainer.add(sidebar, BorderLayout.EAST);
+		
+		this.addComponentListener(new SizeAdapter());
 	}
 	
 	/**

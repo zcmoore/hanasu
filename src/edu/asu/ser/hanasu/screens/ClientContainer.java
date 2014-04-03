@@ -58,7 +58,6 @@ public class ClientContainer extends JFrame implements Singleton
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				System.out.println("resizing");
 				setSize(outterDimension);
 				ResizeTimer.this.stop();
 			}
@@ -122,7 +121,6 @@ public class ClientContainer extends JFrame implements Singleton
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, boundWidth, boundHeight);
 		innerPane = new JPanel();
-		innerPane.setSize(900, 300);
 		innerPane.setLayout(new GridLayout(1, 0, 0, 0));
 		
 		scrollPane = new JScrollPane(innerPane);
@@ -130,7 +128,6 @@ public class ClientContainer extends JFrame implements Singleton
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 		setContentPane(scrollPane);
 		
-		initialScreen.setPreferredSize(new Dimension(450, 300));
 		innerPane.add(initialScreen);
 		
 		this.addComponentListener(new SizeAdapter());
