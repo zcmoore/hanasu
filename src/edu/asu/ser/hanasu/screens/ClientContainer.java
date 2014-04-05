@@ -39,7 +39,6 @@ public class ClientContainer extends JFrame implements Singleton
 			innerDimension = (Dimension) newFrame.getContentPane().getSize().clone();
 			
 			getCurrentPanel().setPreferredSize(innerDimension);
-			((Screen) getCurrentPanel()).resetDividers();
 			
 			ResizeTimer timer = new ResizeTimer(100);
 			timer.start();
@@ -59,9 +58,7 @@ public class ClientContainer extends JFrame implements Singleton
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				System.out.println("resizing");
 				setSize(outterDimension);
-				((Screen) getCurrentPanel()).resetDividers();
 				ResizeTimer.this.stop();
 			}
 		}
@@ -119,12 +116,11 @@ public class ClientContainer extends JFrame implements Singleton
 	public ClientContainer(Screen initialScreen)
 	{
 		Insets insets = getInsets();
-		int boundWidth = 450 + insets.left + insets.right;
-		int boundHeight = 300 + insets.top + insets.bottom;
+		int boundWidth = 1280 + insets.left + insets.right;
+		int boundHeight = 720 + insets.top + insets.bottom;
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, boundWidth, boundHeight);
 		innerPane = new JPanel();
-		innerPane.setSize(900, 300);
 		innerPane.setLayout(new GridLayout(1, 0, 0, 0));
 		
 		scrollPane = new JScrollPane(innerPane);
@@ -132,7 +128,6 @@ public class ClientContainer extends JFrame implements Singleton
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 		setContentPane(scrollPane);
 		
-		initialScreen.setPreferredSize(new Dimension(450, 300));
 		innerPane.add(initialScreen);
 		
 		this.addComponentListener(new SizeAdapter());
@@ -150,14 +145,13 @@ public class ClientContainer extends JFrame implements Singleton
 		return currentPanel;
 	}
 	
-	public void transition(Screen destination)
+	public void transition(JPanel destination)
 	{
 		if (getCurrentPanel() != destination)
 		{
 			System.out.println("Transition Start");
 			destination.setPreferredSize(innerDimension);
 			innerPane.add(destination);
-			destination.resetDividers();
 			
 			transitionTimer.start();
 		}
