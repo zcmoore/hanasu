@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
@@ -11,7 +12,7 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
-public abstract class Screen extends JPanel
+public abstract class Screen extends ImagePanel
 {
 	private JLayeredPane layeredPane;
 	protected JPanel accessiblePane;
@@ -32,8 +33,9 @@ public abstract class Screen extends JPanel
 		}
 	}
 	
-	public Screen(Sidebar sidebar)
+	public Screen(Sidebar sidebar, Image backgroundImage)
 	{
+		super(backgroundImage);
 		setLayout(new GridLayout(1, 0, 0, 0));
 		
 		layeredPane = new JLayeredPane();
@@ -109,4 +111,5 @@ public abstract class Screen extends JPanel
 		
 		this.setEnabled(false);
 	}
+	
 }

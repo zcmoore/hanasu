@@ -4,7 +4,11 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
+
+import javax.imageio.ImageIO;
 
 import edu.asu.ser.hanasu.screens.SidebarButton.SidebarButtonType;
 
@@ -49,17 +53,28 @@ public class ScreenManager
 		screens = new HashMap<>();
 		sidebarListeners = generateSidebarListeners();
 		
-		Sidebar mainBar = new Sidebar(sidebarListeners);
-		mainScreen = new MainScreen(mainBar);
-		screens.put(ScreenType.MAIN, mainScreen);
-		
-		Sidebar channelBar = new Sidebar(sidebarListeners);
-		channelScreen = new ChannelScreen(channelBar);
-		screens.put(ScreenType.CHANNEL, channelScreen);
-		
-		Sidebar chatBar = new Sidebar(sidebarListeners);
-		chatScreen = new ChatScreen(chatBar);
-		screens.put(ScreenType.CHAT, chatScreen);
+		try
+		{
+			Sidebar mainBar = new Sidebar(sidebarListeners);
+			mainScreen = new MainScreen(mainBar, returnScreenBackground(ScreenType.MAIN));
+			screens.put(ScreenType.MAIN, mainScreen);
+			
+			Sidebar channelBar = new Sidebar(sidebarListeners);
+			channelScreen = new ChannelScreen(channelBar, returnScreenBackground(ScreenType.CHANNEL));
+			screens.put(ScreenType.CHANNEL, channelScreen);
+			
+			Sidebar chatBar = new Sidebar(sidebarListeners);
+			chatScreen = new ChatScreen(chatBar, returnScreenBackground(ScreenType.CHAT));
+			screens.put(ScreenType.CHAT, chatScreen);
+		}
+		catch(IOException ioException)
+		{
+			ioException.printStackTrace();
+		}
+		catch(Exception exception)
+		{
+			exception.printStackTrace();
+		}
 		
 		mainScreen.setPreferredSize(new Dimension(450, 300));
 		channelScreen.setPreferredSize(new Dimension(450, 300));
@@ -130,6 +145,25 @@ public class ScreenManager
 	public void setChatScreen(ChatScreen chatScreen)
 	{
 		this.chatScreen = chatScreen;
+	}
+	
+	private Image returnScreenBackground(ScreenType screenType)
+			throws IOException
+	{
+		switch (screenType)
+		{
+		
+			case MAIN:
+				String mainPath = "src/Images/MainScreenBackground.png";
+				return ImageIO.read(new File(mainPath));
+			case CHANNEL:
+				String channelPath = "src/Images/MainScreenBackground.png";
+				return ImageIO.read(new File(channelPath));
+			case CHAT:
+				String chatPath = "src/Images/MainScreenBackground.png";
+				return ImageIO.read(new File(chatPath));
+		}
+		return null;
 	}
 	
 }

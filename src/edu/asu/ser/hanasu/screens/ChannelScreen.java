@@ -2,6 +2,7 @@ package edu.asu.ser.hanasu.screens;
 
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.awt.Image;
 
 import javax.swing.JLabel;
 import javax.swing.JToggleButton;
@@ -16,9 +17,9 @@ public class ChannelScreen extends Screen
 	/**
 	 * Create the panel.
 	 */
-	public ChannelScreen(Sidebar sidebar)
+	public ChannelScreen(Sidebar sidebar, Image background)
 	{
-		super(sidebar);
+		super(sidebar, background);
 		// Temporary/Test contents
 		// TODO: replace with actual MainScreen contents
 		setBackground(Color.RED);
