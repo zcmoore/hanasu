@@ -1,16 +1,18 @@
 package edu.asu.ser.hanasu.screens;
 
+import java.awt.Image;
+
 @SuppressWarnings("serial")
 public class ChatScreen extends Screen
 {
 	/**
 	 * Create the panel.
 	 */
-	public ChatScreen(Sidebar sidebar)
+	public ChatScreen(Sidebar sidebar, Image background)
 	{
-		super(sidebar);
+		super(sidebar, background);
 	}
-
+	
 	@Override
 	public void prepareToExit()
 	{
