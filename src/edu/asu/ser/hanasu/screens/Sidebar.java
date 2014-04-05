@@ -18,12 +18,14 @@ public class Sidebar extends JPanel
 	public Sidebar(HashMap<SidebarButtonType, ActionListener> listeners)
 	{
 		this.setPreferredSize(new Dimension(75, 300));
+		this.setOpaque(false);
 		setLayout(new GridLayout(7, 1, 0, 0));
 		
 		SidebarButton sdbrbtnM = new SidebarButton("Main Screen", "M");
 		sdbrbtnM.addActionListener(listeners.get(SidebarButtonType.MAIN_SCREEN_BUTTON));
 		
 		JPanel panel = new JPanel();
+		panel.setOpaque(false);
 		add(panel);
 		add(sdbrbtnM);
 		
