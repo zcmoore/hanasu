@@ -24,7 +24,7 @@ public class MainScreen extends Screen
 		this.accessiblePane.add(nickNameField);
 		accessiblePane.setBackground(Color.RED);
 	}
-
+	
 	private void setTextFieldProperties()
 	{
 		nickNameField = new JTextField("nickname");
@@ -33,38 +33,38 @@ public class MainScreen extends Screen
 		nickNameField.setOpaque(false);
 		nickNameField.addActionListener(new TextFieldActionAndFocus());
 	}
-
+	
 	@Override
 	public void prepareToExit()
 	{
-		//write to file
+		// write to file
 		
 		throw new NotImplementedException();
 	}
-
+	
 	@Override
 	public void prepareToEnter()
 	{
-		//call screen manager object
-		//if can load file
+		// call screen manager object
+		// if can load file
 		reset();
-		//else populate nickname
+		// else populate nickname
 		throw new NotImplementedException();
 	}
-
+	
 	@Override
 	public void reset()
 	{
 		nickNameField.setText("nickname");
 		throw new NotImplementedException();
 	}
-
+	
 	@Override
 	public void disable()
 	{
 		throw new NotImplementedException();
 	}
-
+	
 	@Override
 	public void enable()
 	{
@@ -90,10 +90,7 @@ public class MainScreen extends Screen
 			
 			System.out.println("Enter: " + nickNameField.getText());
 		}
-
 		
 	}
-	
-	
 	
 }

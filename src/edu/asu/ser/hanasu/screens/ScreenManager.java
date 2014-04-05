@@ -56,22 +56,25 @@ public class ScreenManager
 		try
 		{
 			Sidebar mainBar = new Sidebar(sidebarListeners);
-			mainScreen = new MainScreen(mainBar, returnScreenBackground(ScreenType.MAIN));
+			mainScreen = new MainScreen(mainBar,
+					returnScreenBackground(ScreenType.MAIN));
 			screens.put(ScreenType.MAIN, mainScreen);
 			
 			Sidebar channelBar = new Sidebar(sidebarListeners);
-			channelScreen = new ChannelScreen(channelBar, returnScreenBackground(ScreenType.CHANNEL));
+			channelScreen = new ChannelScreen(channelBar,
+					returnScreenBackground(ScreenType.CHANNEL));
 			screens.put(ScreenType.CHANNEL, channelScreen);
 			
 			Sidebar chatBar = new Sidebar(sidebarListeners);
-			chatScreen = new ChatScreen(chatBar, returnScreenBackground(ScreenType.CHAT));
+			chatScreen = new ChatScreen(chatBar,
+					returnScreenBackground(ScreenType.CHAT));
 			screens.put(ScreenType.CHAT, chatScreen);
 		}
-		catch(IOException ioException)
+		catch (IOException ioException)
 		{
 			ioException.printStackTrace();
 		}
-		catch(Exception exception)
+		catch (Exception exception)
 		{
 			exception.printStackTrace();
 		}

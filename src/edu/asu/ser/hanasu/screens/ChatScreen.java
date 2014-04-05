@@ -12,7 +12,7 @@ public class ChatScreen extends Screen
 	{
 		super(sidebar, background);
 	}
-
+	
 	@Override
 	public void prepareToExit()
 	{

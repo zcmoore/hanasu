@@ -22,15 +22,15 @@ public class ImagePanel extends JPanel
 	}
 	
 	{
-		addComponentListener(new ComponentAdapter()
-		{
+		addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent event)
 			{
 				int width = getWidth();
 				int height = getHeight();
-				if(width > 0 && height > 0)
-					backgroundImage = toBeScaledImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+				if (width > 0 && height > 0)
+					backgroundImage = toBeScaledImage.getScaledInstance(width,
+							height, Image.SCALE_SMOOTH);
 			}
 		});
 	}
@@ -41,7 +41,7 @@ public class ImagePanel extends JPanel
 		
 		tempGraphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
 				RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-	
+		
 		tempGraphics.drawImage(backgroundImage, 0, 0, null);
 		
 		tempGraphics.dispose();
