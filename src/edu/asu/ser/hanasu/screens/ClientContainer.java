@@ -1,18 +1,15 @@
 package edu.asu.ser.hanasu.screens;
 
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
 import javax.swing.JFrame;
+import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JViewport;
 import javax.swing.Timer;
 
 import edu.asu.ser.hanasu.Singleton;
@@ -21,8 +18,7 @@ import edu.asu.ser.hanasu.Singleton;
 public class ClientContainer extends JFrame implements Singleton
 {
 	private final Timer transitionTimer;
-	private final JScrollPane scrollPane;
-	private final JPanel innerPane;
+	private JLayeredPane layeredPane;
 	
 	protected Dimension outterDimension;
 	protected Dimension innerDimension;
@@ -34,11 +30,13 @@ public class ClientContainer extends JFrame implements Singleton
 		{
 			JFrame newFrame = ((JFrame) event.getComponent());
 			
-			outterDimension = AspectRatio.x16_9.formatDimension(newFrame.getSize());
+			outterDimension = AspectRatio.x16_9.formatDimension(newFrame
+					.getSize());
 			newFrame.setSize(outterDimension);
-			innerDimension = (Dimension) newFrame.getContentPane().getSize().clone();
+			innerDimension = new Dimension(newFrame.getContentPane().getSize());
 			
-			//getCurrentPanel().setSize(innerDimension);
+			getCurrentPanel().setBounds(0, 0, innerDimension.width,
+					innerDimension.height);
 			
 			ResizeTimer timer = new ResizeTimer(100);
 			timer.start();
@@ -89,23 +87,17 @@ public class ClientContainer extends JFrame implements Singleton
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				JViewport viewport = scrollPane.getViewport();
-				Point position = viewport.getViewPosition();
-				position.x += delta;
-				
-				if (position.x >= innerDimension.width)
-				{
-					innerPane.remove(0);
-					
-					position.x = 0;
-					viewport.setViewPosition(position);
-					((Screen) getCurrentPanel()).onEnter();
-					TransitionTimer.this.stop();
-				}
-				else
-				{
-					viewport.setViewPosition(position);
-				}
+				/*
+				 * JViewport viewport = scrollPane.getViewport(); Point position
+				 * = viewport.getViewPosition(); position.x += delta;
+				 * 
+				 * if (position.x >= innerDimension.width) {
+				 * innerPane.remove(0);
+				 * 
+				 * position.x = 0; viewport.setViewPosition(position); ((Screen)
+				 * getCurrentPanel()).onEnter(); TransitionTimer.this.stop(); }
+				 * else { viewport.setViewPosition(position); }
+				 */
 			}
 		}
 	}
@@ -120,15 +112,11 @@ public class ClientContainer extends JFrame implements Singleton
 		int boundHeight = 720 + insets.top + insets.bottom;
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, boundWidth, boundHeight);
-		innerPane = new JPanel();
-		innerPane.setLayout(new GridLayout(1, 0, 0, 0));
+		initialScreen.setBounds(0, 0, 1280, 720);
 		
-		scrollPane = new JScrollPane(innerPane);
-		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-		setContentPane(scrollPane);
-		
-		innerPane.add(initialScreen);
+		layeredPane = new JLayeredPane();
+		layeredPane.add(initialScreen);
+		setContentPane(layeredPane);
 		
 		this.addComponentListener(new SizeAdapter());
 		this.setVisible(true);
@@ -141,7 +129,7 @@ public class ClientContainer extends JFrame implements Singleton
 	
 	public JPanel getCurrentPanel()
 	{
-		JPanel currentPanel = (JPanel) innerPane.getComponent(0);
+		JPanel currentPanel = (JPanel) layeredPane.getComponent(0);
 		return currentPanel;
 	}
 	
@@ -149,11 +137,13 @@ public class ClientContainer extends JFrame implements Singleton
 	{
 		if (getCurrentPanel() != destination)
 		{
-			System.out.println("Transition Start");
-			destination.setPreferredSize(innerDimension);
-			innerPane.add(destination);
-			
-			transitionTimer.start();
+			/*
+			 * System.out.println("Transition Start");
+			 * destination.setPreferredSize(innerDimension);
+			 * innerPane.add(destination);
+			 * 
+			 * transitionTimer.start();
+			 */
 		}
 	}
 }
