@@ -2,11 +2,8 @@ package edu.asu.ser.hanasu.screens;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Image;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
@@ -16,21 +13,6 @@ public abstract class Screen extends ImagePanel
 {
 	private JLayeredPane layeredPane;
 	protected JPanel accessiblePane;
-	
-	private class SizeAdapter extends ComponentAdapter
-	{
-		@Override
-		public void componentResized(ComponentEvent event)
-		{
-			System.out.println("resizing");
-			JPanel newPanel = ((JPanel) event.getComponent());
-			
-			for (Component pane : layeredPane.getComponents())
-			{
-				pane.setBounds(0, 0, newPanel.getWidth(), newPanel.getHeight());
-			}
-		}
-	}
 	
 	public Screen(Sidebar sidebar, Image backgroundImage)
 	{
@@ -52,8 +34,17 @@ public abstract class Screen extends ImagePanel
 		topComponentsContainer.setLayout(new BorderLayout(0, 0));
 		topComponentsContainer.setOpaque(false);
 		topComponentsContainer.add(sidebar, BorderLayout.EAST);
+	}
+	
+	@Override
+	public void setBounds(int x, int y, int width, int height)
+	{
+		super.setBounds(x, y, width, height);
 		
-		this.addComponentListener(new SizeAdapter());
+		for (Component pane : layeredPane.getComponents())
+		{
+			pane.setBounds(0, 0, width, height);
+		}
 	}
 	
 	/**
