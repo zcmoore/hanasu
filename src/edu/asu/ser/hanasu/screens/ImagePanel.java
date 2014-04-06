@@ -26,6 +26,7 @@ public class ImagePanel extends JPanel
 			@Override
 			public void componentResized(ComponentEvent event)
 			{
+				System.out.println("resizing: IP");
 				int width = getWidth();
 				int height = getHeight();
 				if (width > 0 && height > 0)

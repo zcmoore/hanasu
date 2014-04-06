@@ -38,7 +38,7 @@ public class ClientContainer extends JFrame implements Singleton
 			newFrame.setSize(outterDimension);
 			innerDimension = (Dimension) newFrame.getContentPane().getSize().clone();
 			
-			getCurrentPanel().setPreferredSize(innerDimension);
+			//getCurrentPanel().setSize(innerDimension);
 			
 			ResizeTimer timer = new ResizeTimer(100);
 			timer.start();

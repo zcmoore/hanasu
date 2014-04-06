@@ -27,8 +27,7 @@ public abstract class Screen extends ImagePanel
 			
 			for (Component pane : layeredPane.getComponents())
 			{
-				Dimension newSize = (Dimension) newPanel.getSize().clone();
-				pane.setPreferredSize(newSize);
+				pane.setBounds(0, 0, newPanel.getWidth(), newPanel.getHeight());
 			}
 		}
 	}
