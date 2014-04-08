@@ -1,6 +1,9 @@
 package edu.asu.ser.hanasu.screens;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -16,8 +19,14 @@ import edu.asu.ser.hanasu.Singleton;
 @SuppressWarnings("serial")
 public class ClientContainer extends JFrame implements Singleton
 {
-	private final Timer transitionTimer;
+	private static final Integer TOP_LAYER = new Integer(700);
+	private static final Integer DIMMING_LAYER = new Integer(500);
+	private static final Integer SCREEN_LAYER = new Integer(300);
+	
+	private final AlphaPane dimmingPane = createDimmingLayer();
+	
 	private JLayeredPane layeredPane;
+	private Component currentPane;
 	
 	private class SizeAdapter extends ComponentAdapter
 	{
@@ -53,6 +62,79 @@ public class ClientContainer extends JFrame implements Singleton
 		validateSize();
 	}
 	
+	private class Transition extends Timer
+	{
+		public Transition(Component target)
+		{
+			super(5, null);
+			addActionListener(new TransitionTimerListener(target));
+			dimmingPane.setOpacity(0);
+			layeredPane.add(dimmingPane, ClientContainer.DIMMING_LAYER);
+			layeredPane.add(target, ClientContainer.TOP_LAYER);
+		}
+		
+		private class TransitionTimerListener implements ActionListener
+		{
+			private Component target;
+			private double delta;
+			
+			TransitionTimerListener(Component target)
+			{
+				this.target = target;
+			}
+			
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				// @formatter:off
+				Point position = target.getLocation();
+				position.x -= delta;
+				
+				if (position.x <= 0)
+				{
+					layeredPane.remove(ClientContainer.this.currentPane);
+					layeredPane.remove(ClientContainer.this.dimmingPane);
+					
+					ClientContainer.this.currentPane = target;
+					
+					position.x = 0;
+					target.setLocation(position);
+					
+					((Screen) getCurrentPanel()).onEnter();
+					
+					layeredPane.setLayer(target, ClientContainer.SCREEN_LAYER);
+					Transition.this.stop();
+				}
+				else
+				{
+					target.setLocation(position);
+				}
+				// @formatter:on
+			}
+		}
+	}
+	
+	/**
+	 * Create the frame.
+	 */
+	public ClientContainer(Screen initialScreen)
+	{
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 100, 1280, 720);
+		initialScreen.setBounds(0, 0, 1280, 720);
+		
+		layeredPane = new JLayeredPane();
+		setContentPane(layeredPane);
+		
+		currentPane = initialScreen;
+		layeredPane.add(initialScreen, SCREEN_LAYER);
+		
+		this.addComponentListener(new SizeAdapter());
+		this.setVisible(true);
+		
+		new ValidationTimer(100).start();
+	}
+	
 	public void validateSize()
 	{
 		AspectRatio ratio = AspectRatio.x16_9;
@@ -80,71 +162,6 @@ public class ClientContainer extends JFrame implements Singleton
 		}
 	}
 	
-	private class TransitionTimer extends Timer
-	{
-		public TransitionTimer()
-		{
-			super(5, null);
-			addActionListener(new TransitionTimerListener());
-		}
-		
-		private class TransitionTimerListener implements ActionListener
-		{
-			private double delta;
-			
-			TransitionTimerListener()
-			{
-				
-			}
-			
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				// @formatter:off
-				/*
-				JViewport viewport = scrollPane.getViewport();
-				Point position = viewport.getViewPosition();
-				position.x += delta;
-				
-				if (position.x >= innerDimension.width)
-				{
-					innerPane.remove(0);
-					
-					position.x = 0;
-					viewport.setViewPosition(position);
-					((Screen) getCurrentPanel()).onEnter();
-					TransitionTimer.this.stop();
-				}
-				else
-				{
-					viewport.setViewPosition(position);
-				}
-				*/
-				// @formatter:on
-			}
-		}
-	}
-	
-	/**
-	 * Create the frame.
-	 */
-	public ClientContainer(Screen initialScreen)
-	{
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 1280, 720);
-		initialScreen.setBounds(0, 0, 1280, 720);
-		
-		layeredPane = new JLayeredPane();
-		layeredPane.add(initialScreen);
-		setContentPane(layeredPane);
-		
-		this.addComponentListener(new SizeAdapter());
-		this.setVisible(true);
-		
-		transitionTimer = new TransitionTimer();
-		new ValidationTimer(100).start();
-	}
-	
 	public JPanel getCurrentPanel()
 	{
 		JPanel currentPanel = (JPanel) layeredPane.getComponent(0);
@@ -165,5 +182,14 @@ public class ClientContainer extends JFrame implements Singleton
 		}
 		*/
 		// @formatter:on
+	}
+	
+	private static AlphaPane createDimmingLayer()
+	{
+		AlphaPane dimmingLayer = new AlphaPane(Color.BLACK);
+		dimmingLayer.setBounds(0, 0, 1280, 720);
+		dimmingLayer.setOpacity(0.75f);
+		
+		return dimmingLayer;
 	}
 }
