@@ -9,10 +9,11 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
-public abstract class Screen extends ImagePanel
+public abstract class Screen extends ImagePanel implements Managable
 {
 	private JLayeredPane layeredPane;
 	protected JPanel accessiblePane;
+	protected ScreenManager screenManager;
 	
 	public Screen(Sidebar sidebar, Image backgroundImage)
 	{
@@ -47,23 +48,6 @@ public abstract class Screen extends ImagePanel
 		}
 	}
 	
-	/**
-	 * Protocol to activate before exiting a screen. This should close all local
-	 * streams and processes that belong only to this screen.
-	 */
-	public abstract void prepareToExit();
-	
-	/**
-	 * Protocol to activate before entering a screen. Open necessary streams if
-	 * applicable.
-	 */
-	public abstract void prepareToEnter();
-	
-	/**
-	 * Restores this screen to its default state.
-	 */
-	public abstract void reset();
-	
 	public void onEnter()
 	{
 		
@@ -73,33 +57,4 @@ public abstract class Screen extends ImagePanel
 	{
 		
 	}
-	
-	/**
-	 * Disables this screen and all components within its panel.
-	 */
-	@Override
-	public void disable()
-	{
-		for (Component component : this.getComponents())
-		{
-			component.setEnabled(false);
-		}
-		
-		this.setEnabled(false);
-	}
-	
-	/**
-	 * Enables this screen and all components within its panel.
-	 */
-	@Override
-	public void enable()
-	{
-		for (Component component : this.getComponents())
-		{
-			component.setEnabled(true);
-		}
-		
-		this.setEnabled(false);
-	}
-	
 }
