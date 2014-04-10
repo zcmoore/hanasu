@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
@@ -26,7 +27,7 @@ public class ClientContainer extends JFrame implements Singleton
 	private final AlphaPane dimmingPane = createDimmingLayer();
 	
 	private JLayeredPane layeredPane;
-	private Component currentPane;
+	private JPanel currentPanel;
 	
 	private class SizeAdapter extends ComponentAdapter
 	{
@@ -64,21 +65,21 @@ public class ClientContainer extends JFrame implements Singleton
 	
 	private class Transition extends Timer
 	{
-		public Transition(Component target)
+		public Transition(JPanel target)
 		{
 			super(5, null);
 			addActionListener(new TransitionTimerListener(target));
-			dimmingPane.setOpacity(0);
+			dimmingPane.setAlpha(0);
 			layeredPane.add(dimmingPane, ClientContainer.DIMMING_LAYER);
 			layeredPane.add(target, ClientContainer.TOP_LAYER);
 		}
 		
 		private class TransitionTimerListener implements ActionListener
 		{
-			private Component target;
+			private JPanel target;
 			private double delta;
 			
-			TransitionTimerListener(Component target)
+			TransitionTimerListener(JPanel target)
 			{
 				this.target = target;
 			}
@@ -86,16 +87,15 @@ public class ClientContainer extends JFrame implements Singleton
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				// @formatter:off
 				Point position = target.getLocation();
 				position.x -= delta;
 				
 				if (position.x <= 0)
 				{
-					layeredPane.remove(ClientContainer.this.currentPane);
+					layeredPane.remove(ClientContainer.this.currentPanel);
 					layeredPane.remove(ClientContainer.this.dimmingPane);
 					
-					ClientContainer.this.currentPane = target;
+					ClientContainer.this.currentPanel = target;
 					
 					position.x = 0;
 					target.setLocation(position);
@@ -109,7 +109,6 @@ public class ClientContainer extends JFrame implements Singleton
 				{
 					target.setLocation(position);
 				}
-				// @formatter:on
 			}
 		}
 	}
@@ -126,13 +125,28 @@ public class ClientContainer extends JFrame implements Singleton
 		layeredPane = new JLayeredPane();
 		setContentPane(layeredPane);
 		
-		currentPane = initialScreen;
+		currentPanel = initialScreen;
 		layeredPane.add(initialScreen, SCREEN_LAYER);
 		
 		this.addComponentListener(new SizeAdapter());
 		this.setVisible(true);
 		
 		new ValidationTimer(100).start();
+	}
+	
+	private void addDimmingPane()
+	{
+		layeredPane.remove(dimmingPane);
+		layeredPane.add(dimmingPane, DIMMING_LAYER);
+	}
+	
+	private static AlphaPane createDimmingLayer()
+	{
+		AlphaPane dimmingLayer = new AlphaPane(Color.BLACK);
+		dimmingLayer.setBounds(0, 0, 1280, 720);
+		dimmingLayer.setAlpha(0.75f);
+		
+		return dimmingLayer;
 	}
 	
 	public void validateSize()
@@ -162,19 +176,12 @@ public class ClientContainer extends JFrame implements Singleton
 		}
 	}
 	
-	public JPanel getCurrentPanel()
-	{
-		JPanel currentPanel = (JPanel) layeredPane.getComponent(0);
-		return currentPanel;
-	}
-	
 	public void transition(JPanel destination)
 	{
 		// @formatter:off
 		/*
 		if (getCurrentPanel() != destination)
 		{
-			System.out.println("Transition Start");
 			destination.setPreferredSize(innerDimension);
 			innerPane.add(destination);
 			
@@ -184,12 +191,13 @@ public class ClientContainer extends JFrame implements Singleton
 		// @formatter:on
 	}
 	
-	private static AlphaPane createDimmingLayer()
+	public Dimension getInnerDimension()
 	{
-		AlphaPane dimmingLayer = new AlphaPane(Color.BLACK);
-		dimmingLayer.setBounds(0, 0, 1280, 720);
-		dimmingLayer.setOpacity(0.75f);
-		
-		return dimmingLayer;
+		return getContentPane().getSize();
+	}
+	
+	public JPanel getCurrentPanel()
+	{
+		return currentPanel;
 	}
 }
