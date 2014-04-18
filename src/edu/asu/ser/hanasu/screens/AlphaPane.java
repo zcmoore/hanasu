@@ -34,8 +34,10 @@ public class AlphaPane extends JPanel
 	/**
 	 * Constructor. Sets the background colour and alpha value of this panel.
 	 * 
-	 * @param colour Desired background (i.e. overlay) colour.
-	 * @param alpha Desired alpha value.
+	 * @param colour
+	 *            Desired background (i.e. overlay) colour.
+	 * @param alpha
+	 *            Desired alpha value.
 	 */
 	public AlphaPane(Color colour, float alpha)
 	{
@@ -43,13 +45,14 @@ public class AlphaPane extends JPanel
 		setAlpha(alpha);
 	}
 	
-	/*
-	 * (non-Javadoc) Override to set the alpha value to either 1 or 0. This
-	 * panel's isOpaque value will always remain false, so to not sho the actual
-	 * panel.
+	/**
+	 * Override to set the alpha value to either 1 or 0. This panel's isOpaque
+	 * value will always remain false, so to not show the actual panel. As such,
+	 * javax.swing.JComponent#setOpaque(boolean) is not invoked.
 	 * 
 	 * @see javax.swing.JComponent#setOpaque(boolean)
 	 */
+	@Override
 	public void setOpaque(boolean isOpaque)
 	{
 		if (isOpaque)
@@ -65,6 +68,7 @@ public class AlphaPane extends JPanel
 	 * 
 	 * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
 	 */
+	@Override
 	public void paintComponent(Graphics g)
 	{
 		super.paintComponent(g);
@@ -84,12 +88,23 @@ public class AlphaPane extends JPanel
 	 */
 	public void setAlpha(float alpha)
 	{
-		Color colour = super.getBackground();
-		int red = colour.getRed();
-		int green = colour.getGreen();
-		int blue = colour.getBlue();
-		
-		colour = new Color(red, green, blue, alpha);
-		super.setBackground(colour);
+		try
+		{
+			Color colour = super.getBackground();
+			int red = colour.getRed();
+			int green = colour.getGreen();
+			int blue = colour.getBlue();
+			
+			colour = new Color(red, green, blue, alpha);
+			super.setBackground(colour);
+		}
+		catch (NullPointerException | IllegalArgumentException e)
+		{
+			if (alpha <= 1.0)
+			{
+				e.printStackTrace();
+				System.out.println("alpha: " + alpha);
+			}
+		}
 	}
 }
