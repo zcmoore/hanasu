@@ -91,20 +91,16 @@ public class AlphaPane extends JPanel
 		try
 		{
 			Color colour = super.getBackground();
-			int red = colour.getRed();
-			int green = colour.getGreen();
-			int blue = colour.getBlue();
+			float red = (float) colour.getRed() / 255f;
+			float green = (float) colour.getGreen() / 255f;
+			float blue = (float) colour.getBlue() / 255f;
 			
 			colour = new Color(red, green, blue, alpha);
 			super.setBackground(colour);
 		}
 		catch (NullPointerException | IllegalArgumentException e)
 		{
-			if (alpha <= 1.0)
-			{
 				e.printStackTrace();
-				System.out.println("alpha: " + alpha);
-			}
 		}
 	}
 }
