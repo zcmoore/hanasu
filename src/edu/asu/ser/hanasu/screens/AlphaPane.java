@@ -103,4 +103,14 @@ public class AlphaPane extends JPanel
 				e.printStackTrace();
 		}
 	}
+
+	/**
+	 * Equivalent to {@link #setAlpha(float)}
+	 * 
+	 * @see #setAlpha(float)
+	 */
+	public void setAlpha(double alpha)
+	{
+		setAlpha((float) alpha);
+	}
 }
