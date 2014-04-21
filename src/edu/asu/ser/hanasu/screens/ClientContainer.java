@@ -16,11 +16,10 @@ import javax.swing.Timer;
 import edu.asu.ser.hanasu.Singleton;
 
 @SuppressWarnings("serial")
-public class ClientContainer extends JFrame implements Singleton
+public class ClientContainer extends JFrame implements Singleton, Layered
 {
-	private static final Integer TOP_LAYER = new Integer(700);
-	private static final Integer DIMMING_LAYER = new Integer(500);
-	private static final Integer SCREEN_LAYER = new Integer(300);
+	private static final Integer DIMMING_LAYER = SEMI_TOP_LAYER;
+	private static final Integer SCREEN_LAYER = SEMI_BOTTOM_LAYER;
 	
 	private final AlphaPane dimmingPane = createDimmingLayer();
 	
@@ -30,18 +29,30 @@ public class ClientContainer extends JFrame implements Singleton
 	private class Transition extends Timer
 	{
 		private JPanel target;
+		private ActionListener onStart;
+		private ActionListener onFinish;
 		
 		public Transition(JPanel target)
 		{
 			super(5, null);
 			this.target = target;
 			addActionListener(new TransitionTimerListener());
-			
+		}
+		
+		public Transition(JPanel target, ActionListener onStart,
+				ActionListener onFinish)
+		{
+			this(target);
+			this.onStart = onStart;
+			this.onFinish = onFinish;
 		}
 		
 		@Override
 		public void start()
 		{
+			if (onStart != null)
+				onStart.actionPerformed(null);
+			
 			dimmingPane.setAlpha(0);
 			ClientContainer.this.addDimmingPane();
 			target.setLocation(getInnerDimension().width, 0);
@@ -52,52 +63,49 @@ public class ClientContainer extends JFrame implements Singleton
 		private class TransitionTimerListener implements ActionListener
 		{
 			// TODO: Clean & modularize
-			// TODO: Replace with "ClassicalMotion" objects
+			// TODO: Replace with "NewtonianBehaviour" objects
 			// TODO: Calculate values based on width and time
-			private double positionAcceleration = -0.27;
-			private double positionVelocity = 25;
+			private NewtonianBehaviour position;
+			private NewtonianBehaviour luminosity;
 			
-			private float dimmingAlpha = 0;
-			private double dimmingVelocity = 0.01;
-			private double dimmingAcceleration = 0;
+			public TransitionTimerListener()
+			{
+				position = new NewtonianBehaviour(1280, -25, 0.27);
+				position.setMaxVelocity(-1);
+				position.setMinValue(0);
+				
+				luminosity = new NewtonianBehaviour(0, 0.01, 0);
+				luminosity.setMaxValue(1.0);
+				luminosity.setMinVelocity(0.01);
+				System.out.println(position);
+			}
 			
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				Point position = target.getLocation();
-				position.x -= positionVelocity;
+				Point targetLocation = target.getLocation();
+				targetLocation.x = (int) position.advance();
+				target.setLocation(targetLocation);
 				
-				if (position.x <= 0)
-				{
-					layeredPane.remove(ClientContainer.this.currentPanel);
-					layeredPane.remove(ClientContainer.this.dimmingPane);
-					
-					ClientContainer.this.currentPanel = target;
-					
-					position.x = 0;
-					target.setLocation(position);
-					
-					((Screen) getCurrentPanel()).onEnter();
-					
-					layeredPane.setLayer(target, ClientContainer.SCREEN_LAYER);
-					Transition.this.stop();
-				}
-				else
-				{
-					target.setLocation(position);
-					dimmingAlpha += dimmingVelocity;
-					dimmingVelocity += dimmingAcceleration;
-					
-					dimmingPane.setAlpha(dimmingAlpha);
-					positionVelocity += positionAcceleration;
-					
-					if (positionVelocity < 1)
-						positionVelocity = 1;
-					if (dimmingVelocity <= 0)
-						dimmingVelocity = 0.01;
-					if (dimmingAlpha > 1)
-						dimmingAlpha = 1;
-				}
+				luminosity.advance();
+				dimmingPane.setAlpha(luminosity.getValue());
+				
+				if (position.isAtLimit())
+					finish();
+			}
+			
+			public void finish()
+			{
+				layeredPane.remove(ClientContainer.this.currentPanel);
+				layeredPane.remove(ClientContainer.this.dimmingPane);
+				
+				ClientContainer.this.currentPanel = target;
+				
+				layeredPane.setLayer(target, ClientContainer.SCREEN_LAYER);
+				Transition.this.stop();
+				
+				if (onFinish != null)
+					onFinish.actionPerformed(null);
 			}
 		}
 	}
@@ -163,10 +171,17 @@ public class ClientContainer extends JFrame implements Singleton
 	
 	public void transition(JPanel destination)
 	{
+		transition(destination, null, null);
+	}
+	
+	public void transition(JPanel destination, ActionListener onStart,
+			ActionListener onFinish)
+	{
 		if (getCurrentPanel() != destination)
 		{
 			destination.setSize(getInnerDimension());
-			Transition transition = new Transition(destination);
+			Transition transition = new Transition(destination, onStart,
+					onFinish);
 			destination.setPreferredSize(getInnerDimension());
 			
 			transition.start();
