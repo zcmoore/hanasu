@@ -11,10 +11,10 @@ public class Main
 	 */
 	public static void main(String[] args)
 	{
-		EventQueue.invokeLater(new SetupRunnable());
+		EventQueue.invokeLater(new Setup());
 	}
 	
-	private static class SetupRunnable implements Runnable
+	private static class Setup implements Runnable
 	{
 		public void run()
 		{
