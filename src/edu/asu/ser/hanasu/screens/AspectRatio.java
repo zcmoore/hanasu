@@ -60,6 +60,19 @@ public enum AspectRatio
 		return dimension;
 	}
 	
+	public boolean isMultiple(Dimension dimension)
+	{
+		return isMultiple(dimension.width, dimension.height);
+	}
+	
+	public boolean isMultiple(int width, int height)
+	{
+		boolean widthMatch = (width % this.width) == 0;
+		boolean heightMatch = (height % this.height) == 0;
+		
+		return widthMatch && heightMatch;
+	}
+	
 	public static AspectRatio closest(Dimension dimension)
 	{
 		// Set default values
