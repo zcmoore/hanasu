@@ -2,35 +2,18 @@ package edu.asu.ser.hanasu.screens;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Image;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
-public abstract class Screen extends ImagePanel
+public abstract class Screen extends ImagePanel implements Managable
 {
 	private JLayeredPane layeredPane;
 	protected JPanel accessiblePane;
-	
-	private class SizeAdapter extends ComponentAdapter
-	{
-		@Override
-		public void componentResized(ComponentEvent event)
-		{
-			System.out.println("resizing");
-			JPanel newPanel = ((JPanel) event.getComponent());
-			
-			for (Component pane : layeredPane.getComponents())
-			{
-				pane.setBounds(0, 0, newPanel.getWidth(), newPanel.getHeight());
-			}
-		}
-	}
+	protected ScreenManager screenManager;
 	
 	public Screen(Sidebar sidebar, Image backgroundImage)
 	{
@@ -52,26 +35,18 @@ public abstract class Screen extends ImagePanel
 		topComponentsContainer.setLayout(new BorderLayout(0, 0));
 		topComponentsContainer.setOpaque(false);
 		topComponentsContainer.add(sidebar, BorderLayout.EAST);
-		
-		this.addComponentListener(new SizeAdapter());
 	}
 	
-	/**
-	 * Protocol to activate before exiting a screen. This should close all local
-	 * streams and processes that belong only to this screen.
-	 */
-	public abstract void prepareToExit();
-	
-	/**
-	 * Protocol to activate before entering a screen. Open necessary streams if
-	 * applicable.
-	 */
-	public abstract void prepareToEnter();
-	
-	/**
-	 * Restores this screen to its default state.
-	 */
-	public abstract void reset();
+	@Override
+	public void setBounds(int x, int y, int width, int height)
+	{
+		super.setBounds(x, y, width, height);
+		
+		for (Component pane : layeredPane.getComponents())
+		{
+			pane.setBounds(0, 0, width, height);
+		}
+	}
 	
 	public void onEnter()
 	{
@@ -82,33 +57,4 @@ public abstract class Screen extends ImagePanel
 	{
 		
 	}
-	
-	/**
-	 * Disables this screen and all components within its panel.
-	 */
-	@Override
-	public void disable()
-	{
-		for (Component component : this.getComponents())
-		{
-			component.setEnabled(false);
-		}
-		
-		this.setEnabled(false);
-	}
-	
-	/**
-	 * Enables this screen and all components within its panel.
-	 */
-	@Override
-	public void enable()
-	{
-		for (Component component : this.getComponents())
-		{
-			component.setEnabled(true);
-		}
-		
-		this.setEnabled(false);
-	}
-	
 }

@@ -14,8 +14,6 @@ import edu.asu.ser.hanasu.screens.SidebarButton.SidebarButtonType;
 
 public class ScreenManager
 {
-	private static Image barImage;
-	
 	private final HashMap<SidebarButtonType, ActionListener> sidebarListeners;
 	private final HashMap<ScreenType, Screen> screens;
 	private ClientContainer client;
@@ -46,6 +44,52 @@ public class ScreenManager
 			transition(destination);
 		}
 		
+	}
+	
+	private static abstract class TransitionAction implements ActionListener
+	{
+		protected Screen exitScreen;
+		protected Screen enterScreen;
+		
+		private TransitionAction(Screen exitScreen, Screen enterScreen)
+		{
+			this.exitScreen = exitScreen;
+			this.enterScreen = enterScreen;
+		}
+	}
+	
+	private static class OnStart extends TransitionAction
+	{
+		private OnStart(Screen exitScreen, Screen enterScreen)
+		{
+			super(exitScreen, enterScreen);
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent arg0)
+		{
+			// TODO: re-enable
+			
+			//@formatter:off
+			/*exitScreen.prepareToExit();
+			enterScreen.prepareToEnter();*/
+			//@formatter:on
+		}
+	}
+	
+	private static class OnFinish extends TransitionAction
+	{
+		private OnFinish(Screen exitScreen, Screen enterScreen)
+		{
+			super(exitScreen, enterScreen);
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent arg0)
+		{
+			exitScreen.onExit();
+			enterScreen.onEnter();
+		}
 	}
 	
 	private ScreenManager()
@@ -111,13 +155,8 @@ public class ScreenManager
 		Screen exitScreen = (Screen) client.getCurrentPanel();
 		Screen destinationScreen = screens.get(destination);
 		
-		// exitScreen.prepareToExit();
-		// destinationScreen.prepareToEnter();
-		
-		client.transition(destinationScreen);
-		
-		destinationScreen.onEnter();
-		exitScreen.onExit();
+		client.transition(destinationScreen, new OnStart(exitScreen,
+				destinationScreen), new OnFinish(exitScreen, destinationScreen));
 	}
 	
 	public MainScreen getMainScreen()
@@ -155,7 +194,6 @@ public class ScreenManager
 	{
 		switch (screenType)
 		{
-		
 			case MAIN:
 				String mainPath = "src/Images/MainScreenBackground.png";
 				return ImageIO.read(new File(mainPath));
