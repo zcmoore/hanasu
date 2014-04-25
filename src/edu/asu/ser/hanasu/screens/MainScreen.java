@@ -1,11 +1,15 @@
 package edu.asu.ser.hanasu.screens;
 
 import java.awt.Color;
+import java.awt.ComponentOrientation;
+import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JTextField;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -14,15 +18,25 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 public class MainScreen extends Screen
 {
 	private JTextField nickNameField;
+	private JLabel textFieldVericationIcon;
 	private ScreenManager screenManager;
-	private String nickname;
+	private String nickName;
 	
-	public MainScreen(Sidebar sidebar, Image backgroundImage)
+	public MainScreen(Sidebar sidebar, Image backgroundImage, ScreenManager screenManager)
 	{
-		super(sidebar, backgroundImage);
+		super(sidebar, backgroundImage, screenManager);
+
+		accessiblePane.setBackground(Color.BLUE);
+		accessiblePane.setOpaque(false);
+		accessiblePane.setLayout(new FlowLayout(2, 10, 5));
+		
 		setTextFieldProperties();
-		this.accessiblePane.add(nickNameField);
-		accessiblePane.setBackground(Color.RED);
+		accessiblePane
+				.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+		accessiblePane.add(textFieldVericationIcon);
+		accessiblePane.add(nickNameField);
+		
+		this.screenManager = screenManager;
 	}
 	
 	private void setTextFieldProperties()
@@ -32,31 +46,27 @@ public class MainScreen extends Screen
 		nickNameField.setForeground(Color.WHITE);
 		nickNameField.setOpaque(false);
 		nickNameField.addActionListener(new TextFieldActionAndFocus());
+		textFieldVericationIcon = new JLabel();
 	}
 	
 	@Override
 	public void prepareToExit()
 	{
-		// write to file
-		
-		throw new NotImplementedException();
+		screenManager.getUserObject().setNickName(nickName);
+		textFieldVericationIcon.setIcon(null);
 	}
 	
 	@Override
 	public void prepareToEnter()
 	{
-		// call screen manager object
-		// if can load file
-		reset();
-		// else populate nickname
-		throw new NotImplementedException();
+		nickName = screenManager.getUserObject().getNickName();
+		nickNameField.setText(screenManager.getUserObject().getNickName());
 	}
 	
 	@Override
 	public void reset()
 	{
-		nickNameField.setText("nickname");
-		throw new NotImplementedException();
+		nickNameField.setText(screenManager.getUserObject().getNickName());
 	}
 	
 	@Override
@@ -71,26 +81,18 @@ public class MainScreen extends Screen
 		throw new NotImplementedException();
 	}
 	
-	private void setNickname(String nickname)
-	{
-		this.nickname = nickname;
-	}
-	
-	private String getNickname()
-	{
-		return this.nickname;
-	}
-	
 	public class TextFieldActionAndFocus implements ActionListener
 	{
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			setNickname(nickNameField.getText().trim());
+			nickName = nickNameField.getText().trim();
+			screenManager.getUserObject().setNickName(nickName);
+			textFieldVericationIcon.setIcon(new ImageIcon(
+					"src/Images/GreenCheck.png"));
 			
-			System.out.println("Enter: " + nickNameField.getText());
+			System.out.println("Enter Key: " + nickNameField.getText());
 		}
-		
 	}
 	
 }

@@ -8,9 +8,9 @@ public class ChatScreen extends Screen
 	/**
 	 * Create the panel.
 	 */
-	public ChatScreen(Sidebar sidebar, Image background)
+	public ChatScreen(Sidebar sidebar, Image backgroundImage, ScreenManager screenManager)
 	{
-		super(sidebar, background);
+		super(sidebar, backgroundImage, screenManager);
 	}
 	
 	@Override

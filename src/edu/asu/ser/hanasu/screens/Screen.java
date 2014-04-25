@@ -13,11 +13,12 @@ public abstract class Screen extends ImagePanel implements Managable
 {
 	private JLayeredPane layeredPane;
 	protected JPanel accessiblePane;
-	protected ScreenManager screenManager;
+	protected ScreenManager screenManagerReference;
 	
-	public Screen(Sidebar sidebar, Image backgroundImage)
+	public Screen(Sidebar sidebar, Image backgroundImage, ScreenManager screenManager)
 	{
 		super(backgroundImage);
+		screenManagerReference = screenManager;
 		setLayout(new GridLayout(1, 0, 0, 0));
 		
 		layeredPane = new JLayeredPane();
