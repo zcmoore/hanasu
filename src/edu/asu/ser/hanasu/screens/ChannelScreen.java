@@ -1,63 +1,76 @@
 package edu.asu.ser.hanasu.screens;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
-import javax.swing.JLabel;
-import javax.swing.JToggleButton;
-import javax.swing.JTree;
+import javax.swing.JPanel;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 @SuppressWarnings("serial")
 public class ChannelScreen extends Screen
 {
+	private KanaGroup kanaGroup;
+	private ScreenManager screenManager;
 	
-	/**
-	 * Create the panel.
-	 */
-	public ChannelScreen(Sidebar sidebar, Image background)
+	public ChannelScreen(Sidebar sidebar, Image backgroundImage, ScreenManager screenManager)
 	{
-		super(sidebar, background);
-		// Temporary/Test contents
-		// TODO: replace with actual MainScreen contents
+		super(sidebar, backgroundImage, screenManager);
+		
 		setBackground(Color.RED);
-		accessiblePane.setLayout(new GridLayout(3, 2, 0, 0));
 		
-		JTree tree = new JTree();
-		tree.setForeground(Color.RED);
-		tree.setBackground(Color.RED);
-		accessiblePane.add(tree);
+		accessiblePane.setLayout(new GridLayout(1,0));
 		
-		JToggleButton tglbtnNewToggleButton = new JToggleButton(
-				"New toggle button");
-		accessiblePane.add(tglbtnNewToggleButton);
+		kanaGroup = new KanaGroup(accessiblePane.getWidth(), accessiblePane.getHeight(), screenManager);
 		
-		JLabel lblNewLabel = new JLabel("New label");
-		accessiblePane.add(lblNewLabel);
+		kanaGroup.setPreferredSize(new Dimension(accessiblePane.getWidth(), accessiblePane.getHeight()));
+		kanaGroup.setBounds(0, 0, accessiblePane.getWidth(), accessiblePane.getHeight());
+		kanaGroup.setOpaque(false);
 		
+		accessiblePane.add(kanaGroup);
+		
+		accessiblePane.setOpaque(false);
+		
+		this.screenManager = screenManager;
+		
+		this.addComponentListener(new SizeAdapter());
 	}
+	
+	
 	
 	@Override
 	public void prepareToExit()
 	{
-		// TODO Auto-generated method stub
-		throw new NotImplementedException();
+		screenManager.getUserObject().setStrokesArray(kanaGroup.getStrokeArray());
 	}
 	
 	@Override
 	public void prepareToEnter()
 	{
-		// TODO Auto-generated method stub
-		throw new NotImplementedException();
+		//if userObject was able to be read
+		//AKA not just created a new one
+		if(screenManager.getUserObject().getStrokesArray() != null)
+		{
+			System.out.println("object strokes not null");
+			kanaGroup.setStrokeArray(screenManager.getUserObject().getStrokesArray());
+		}
 	}
 	
 	@Override
 	public void reset()
 	{
-		// TODO Auto-generated method stub
-		throw new NotImplementedException();
+		if(screenManager.getUserObject().getStrokesArray() != null)
+		{
+			kanaGroup.setStrokeArray(screenManager.getUserObject().getStrokesArray());
+		}
+		else
+		{
+			kanaGroup.setStrokeArray(new KanaGroup(accessiblePane.getWidth(), accessiblePane.getHeight(), screenManager).getStrokeArray());
+		}
 	}
 	
 	@Override
@@ -74,4 +87,19 @@ public class ChannelScreen extends Screen
 		throw new NotImplementedException();
 	}
 	
+	private class SizeAdapter extends ComponentAdapter
+	{
+		@Override
+		public void componentResized(ComponentEvent event)
+		{
+			System.out.println("resizing");
+			JPanel newPanel = ((JPanel) event.getComponent());
+			
+			for(KanaStroke stroke : kanaGroup.getStrokeArray())
+			{
+				stroke.setBounds(0, 0, newPanel.getWidth(), newPanel.getHeight());
+				stroke.setScales(newPanel.getWidth(), newPanel.getHeight());
+			}
+		}
+	}
 }

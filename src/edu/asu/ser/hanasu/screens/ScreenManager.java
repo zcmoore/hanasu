@@ -5,12 +5,17 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
 import edu.asu.ser.hanasu.screens.SidebarButton.SidebarButtonType;
+import edu.asu.ser.hanasu.server.Client;
 
 public class ScreenManager
 {
@@ -21,6 +26,8 @@ public class ScreenManager
 	private MainScreen mainScreen;
 	private ChannelScreen channelScreen;
 	private ChatScreen chatScreen;
+	
+	private UserObject userObject;
 	
 	private static enum ScreenType
 	{
@@ -101,18 +108,21 @@ public class ScreenManager
 		{
 			Sidebar mainBar = new Sidebar(sidebarListeners);
 			mainScreen = new MainScreen(mainBar,
-					returnScreenBackground(ScreenType.MAIN));
-			screens.put(ScreenType.MAIN, mainScreen);
+					returnScreenBackground(ScreenType.MAIN), this);
 			
-			Sidebar channelBar = new Sidebar(sidebarListeners);
-			channelScreen = new ChannelScreen(channelBar,
-					returnScreenBackground(ScreenType.CHANNEL));
-			screens.put(ScreenType.CHANNEL, channelScreen);
 			
 			Sidebar chatBar = new Sidebar(sidebarListeners);
 			chatScreen = new ChatScreen(chatBar,
-					returnScreenBackground(ScreenType.CHAT));
+					returnScreenBackground(ScreenType.CHAT), this);
+			
+			Sidebar channelBar = new Sidebar(sidebarListeners);
+			channelScreen = new ChannelScreen(channelBar,
+					returnScreenBackground(ScreenType.CHANNEL), this);
+			
+			screens.put(ScreenType.MAIN, mainScreen);
+			screens.put(ScreenType.CHANNEL, channelScreen);
 			screens.put(ScreenType.CHAT, chatScreen);
+			
 		}
 		catch (IOException ioException)
 		{
@@ -128,6 +138,8 @@ public class ScreenManager
 		chatScreen.setPreferredSize(new Dimension(450, 300));
 		
 		client = new ClientContainer(mainScreen);
+		
+		createUserObject();
 	}
 	
 	public static ScreenManager createManager()
@@ -146,6 +158,18 @@ public class ScreenManager
 		ActionListener channelListener = new TransitionListener(
 				ScreenType.CHANNEL);
 		map.put(SidebarButtonType.CHANNEL_SCREEN_BUTTON, channelListener);
+		
+		ActionListener chatListener1 = new TransitionListener(
+				ScreenType.CHAT);
+		map.put(SidebarButtonType.CHANNEL_BUTTON_1, chatListener1);
+		
+		ActionListener chatListener2 = new TransitionListener(
+				ScreenType.CHAT);
+		map.put(SidebarButtonType.CHANNEL_BUTTON_2, chatListener2);
+		
+		ActionListener chatListener3 = new TransitionListener(
+				ScreenType.CHAT);
+		map.put(SidebarButtonType.CHANNEL_BUTTON_3, chatListener3);
 		
 		return map;
 	}
@@ -198,7 +222,7 @@ public class ScreenManager
 				String mainPath = "src/Images/MainScreenBackground.png";
 				return ImageIO.read(new File(mainPath));
 			case CHANNEL:
-				String channelPath = "src/Images/MainScreenBackground.png";
+				String channelPath = "src/Images/NewChannelScreen.png";
 				return ImageIO.read(new File(channelPath));
 			case CHAT:
 				String chatPath = "src/Images/MainScreenBackground.png";
@@ -207,4 +231,117 @@ public class ScreenManager
 		return null;
 	}
 	
+	private void createUserObject()
+	{
+		if (new File("src/UserObject.ser").exists())
+		{
+			//TODO implement UserObject not set
+			try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream("src/UserObject.ser")))
+			{
+				//TODO implement fix for file but no object
+				UserObject userObjectRead = (UserObject) objectInputStream.readObject();
+				userObject = userObjectRead;
+			} 
+			catch (IOException exception)
+			{
+				System.out.println("IOException: ");
+				userObject = new UserObject();
+				//exception.printStackTrace();
+			}
+			catch (ClassNotFoundException exception)
+			{
+				System.out.println("Class not found exception");
+				userObject = new UserObject();
+				//exception.printStackTrace();
+			}
+		}
+		else
+		{
+			userObject = new UserObject();
+		}
+	}
+	
+	public boolean createAndConnectServer(String serverName, int port, String passsword, String username)
+	{
+		System.out.println("call to create client!");
+		
+		//getUserObject().setClientForServer(new Client(serverName, port, username, null));
+		//getUserObject().clientForServer.start();
+		return false;
+	}
+	
+	public UserObject getUserObject()
+	{
+		return userObject;
+	}
+	
+	public class UserObject implements Serializable
+	{
+		private Client clientForServer;
+		private String nickName;
+		private String hostName;
+		private String channelPassword;
+		private ArrayList<KanaStroke> strokesArray;
+		private boolean isConnected;
+		
+		public UserObject()
+		{
+			nickName = "nickname";
+			hostName = "Channel X";
+			channelPassword = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+			strokesArray = null;
+			isConnected = false;
+			System.out.println("New userobject created");
+		}
+		
+		public String getNickName()
+		{
+			return nickName;
+		}
+		
+		public String getHostName()
+		{
+			return hostName;
+		}
+
+		public String getChannelPassword()
+		{
+			return channelPassword;
+		}
+		
+		public Client getClientForServer()
+		{
+			return clientForServer;
+		}
+
+		public ArrayList<KanaStroke> getStrokesArray()
+		{
+			return strokesArray;
+		}
+
+		public void setNickName(String nickName)
+		{
+			this.nickName = nickName;
+		}
+
+		public void setHostName(String hostName)
+		{
+			this.hostName = hostName;
+		}
+
+		public void setChannelPassword(String channelPassword)
+		{
+			this.channelPassword = channelPassword;
+		}
+
+		public void setClientForServer(Client clientForServer)
+		{
+			this.clientForServer = clientForServer;
+		}
+
+		public void setStrokesArray(ArrayList<KanaStroke> strokesArray)
+		{
+			this.strokesArray = strokesArray;
+		}
+	}
 }
