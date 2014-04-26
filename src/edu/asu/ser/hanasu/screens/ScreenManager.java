@@ -159,6 +159,18 @@ public class ScreenManager
 				ScreenType.CHANNEL);
 		map.put(SidebarButtonType.CHANNEL_SCREEN_BUTTON, channelListener);
 		
+		ActionListener chatListener1 = new TransitionListener(
+				ScreenType.CHAT);
+		map.put(SidebarButtonType.CHANNEL_BUTTON_1, chatListener1);
+		
+		ActionListener chatListener2 = new TransitionListener(
+				ScreenType.CHAT);
+		map.put(SidebarButtonType.CHANNEL_BUTTON_2, chatListener2);
+		
+		ActionListener chatListener3 = new TransitionListener(
+				ScreenType.CHAT);
+		map.put(SidebarButtonType.CHANNEL_BUTTON_3, chatListener3);
+		
 		return map;
 	}
 	
@@ -270,6 +282,7 @@ public class ScreenManager
 		private String hostName;
 		private String channelPassword;
 		private ArrayList<KanaStroke> strokesArray;
+		private boolean isConnected;
 		
 		public UserObject()
 		{
@@ -277,6 +290,7 @@ public class ScreenManager
 			hostName = "Channel X";
 			channelPassword = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 			strokesArray = null;
+			isConnected = false;
 			System.out.println("New userobject created");
 		}
 		
