@@ -333,5 +333,12 @@ public class AESCryptographer
 		
 		return result;
 	}
+
+	public AESBlock getKey()
+	{
+		return key[0];
+	}
+	
+	
 	
 }
