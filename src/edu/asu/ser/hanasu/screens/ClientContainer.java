@@ -26,6 +26,8 @@ public class ClientContainer extends JFrame implements Singleton, Layered
 	private JLayeredPane layeredPane;
 	private JPanel currentPanel;
 	
+	private Transition currentTransition;
+	
 	private class Transition extends Timer
 	{
 		private JPanel target;
@@ -50,6 +52,7 @@ public class ClientContainer extends JFrame implements Singleton, Layered
 		@Override
 		public void start()
 		{
+			currentTransition = this;
 			if (onStart != null)
 				onStart.actionPerformed(null);
 			
@@ -60,10 +63,16 @@ public class ClientContainer extends JFrame implements Singleton, Layered
 			super.start();
 		}
 		
+		@Override
+		public void stop()
+		{
+			currentTransition = null;
+			super.stop();
+		}
+		
 		private class TransitionTimerListener implements ActionListener
 		{
 			// TODO: Clean & modularize
-			// TODO: Replace with "NewtonianBehaviour" objects
 			// TODO: Calculate values based on width and time
 			private NewtonianBehaviour position;
 			private NewtonianBehaviour luminosity;
@@ -177,7 +186,7 @@ public class ClientContainer extends JFrame implements Singleton, Layered
 	public void transition(JPanel destination, ActionListener onStart,
 			ActionListener onFinish)
 	{
-		if (getCurrentPanel() != destination)
+		if (!isTransitioning() && (getCurrentPanel() != destination))
 		{
 			destination.setSize(getInnerDimension());
 			Transition transition = new Transition(destination, onStart,
@@ -186,6 +195,11 @@ public class ClientContainer extends JFrame implements Singleton, Layered
 			
 			transition.start();
 		}
+	}
+	
+	public boolean isTransitioning()
+	{
+		return (currentTransition != null);
 	}
 	
 	public Dimension getInnerDimension()

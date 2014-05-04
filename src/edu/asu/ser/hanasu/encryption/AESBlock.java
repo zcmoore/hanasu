@@ -34,7 +34,7 @@ public class AESBlock
 	 * 
 	 * Note: the actual data array will not be extended, to improve performance.
 	 * Rather, the entries are not added to the 2D array when the data is being
-	 * mixed.
+	 * mixed. This has the same effect as extending 0's
 	 * 
 	 * @param data
 	 *            The data to store in this block, as a byte[]
@@ -105,42 +105,33 @@ public class AESBlock
 		int remainingBytes = data.length % blockLength;
 		AESBlock[] dataBlocks;
 		
-		try
+		if (remainingBytes > 0)
 		{
-			if (remainingBytes > 0)
-			{
-				dataBlocks = new AESBlock[numberOfBlocks + 1];
-				
-				// Handle the last block
-				byte[] dataSection = new byte[remainingBytes];
-				int startIndex = data.length - remainingBytes;
-				System.arraycopy(data, startIndex, dataSection, 0,
-						remainingBytes);
-				
-				AESBlock dataBlock;
-				
-				dataBlock = new AESBlock(dataSection, blockType);
-				dataBlocks[numberOfBlocks] = dataBlock;
-			}
-			else
-			{
-				dataBlocks = new AESBlock[numberOfBlocks];
-			}
+			dataBlocks = new AESBlock[numberOfBlocks + 1];
 			
-			for (int index = 0; index < numberOfBlocks; index++)
-			{
-				byte[] dataSection = new byte[blockLength];
-				int startIndex = index * blockLength;
-				System.arraycopy(data, startIndex, dataSection, 0, blockLength);
-				
-				AESBlock dataBlock = new AESBlock(dataSection, blockType);
-				dataBlocks[index] = dataBlock;
-			}
+			// Handle the last block
+			byte[] dataSection = new byte[remainingBytes];
+			int startIndex = data.length - remainingBytes;
+			System.arraycopy(data, startIndex, dataSection, 0, remainingBytes);
+			
+			AESBlock dataBlock;
+			
+			dataBlock = new AESBlock(dataSection, blockType);
+			dataBlocks[numberOfBlocks] = dataBlock;
 		}
-		catch (InvalidBlockSizeException e)
+		else
 		{
-			e.printStackTrace();
-			dataBlocks = null;
+			dataBlocks = new AESBlock[numberOfBlocks];
+		}
+		
+		for (int index = 0; index < numberOfBlocks; index++)
+		{
+			byte[] dataSection = new byte[blockLength];
+			int startIndex = index * blockLength;
+			System.arraycopy(data, startIndex, dataSection, 0, blockLength);
+			
+			AESBlock dataBlock = new AESBlock(dataSection, blockType);
+			dataBlocks[index] = dataBlock;
 		}
 		
 		return dataBlocks;

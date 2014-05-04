@@ -9,7 +9,7 @@ package edu.asu.ser.hanasu.encryption;
  * @author Moore, Zachary
  * 
  */
-public class InvalidBlockSizeException extends Exception
+public class InvalidBlockSizeException extends RuntimeException
 {
 	private static final long serialVersionUID = -7951057370633114075L;
 	

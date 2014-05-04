@@ -100,7 +100,7 @@ public class AlphaPane extends JPanel
 		}
 		catch (NullPointerException | IllegalArgumentException e)
 		{
-				e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 

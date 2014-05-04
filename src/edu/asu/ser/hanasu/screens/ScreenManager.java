@@ -17,7 +17,8 @@ import javax.imageio.ImageIO;
 import edu.asu.ser.hanasu.screens.SidebarButton.SidebarButtonType;
 import edu.asu.ser.hanasu.server.Client;
 
-public class ScreenManager
+@SuppressWarnings("serial")
+public class ScreenManager implements Serializable
 {
 	private final HashMap<SidebarButtonType, ActionListener> sidebarListeners;
 	private final HashMap<ScreenType, Screen> screens;
@@ -29,7 +30,7 @@ public class ScreenManager
 	
 	private UserObject userObject;
 	
-	private static enum ScreenType
+	public static enum ScreenType
 	{
 		MAIN,
 		CHANNEL,
@@ -183,6 +184,11 @@ public class ScreenManager
 				destinationScreen), new OnFinish(exitScreen, destinationScreen));
 	}
 	
+	public Screen getCurrentScreen()
+	{
+		return (Screen) client.getCurrentPanel();
+	}
+	
 	public MainScreen getMainScreen()
 	{
 		return mainScreen;
@@ -275,6 +281,11 @@ public class ScreenManager
 		return userObject;
 	}
 	
+	public boolean isTransitioning()
+	{
+		return client.isTransitioning();
+	}
+	
 	public class UserObject implements Serializable
 	{
 		private Client clientForServer;
@@ -282,7 +293,6 @@ public class ScreenManager
 		private String hostName;
 		private String channelPassword;
 		private ArrayList<KanaStroke> strokesArray;
-		private boolean isConnected;
 		
 		public UserObject()
 		{
@@ -290,7 +300,6 @@ public class ScreenManager
 			hostName = "Channel X";
 			channelPassword = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 			strokesArray = null;
-			isConnected = false;
 			System.out.println("New userobject created");
 		}
 		
