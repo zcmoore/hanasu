@@ -1,5 +1,6 @@
 package edu.asu.ser.hanasu.screens;
 
+
 public class VirtualChannel extends Channel
 {
 	private boolean local;
@@ -9,20 +10,42 @@ public class VirtualChannel extends Channel
 		local = false;
 	}
 	
-	public boolean connect(ScreenManager screenManager)
+	public boolean connect(ScreenManager screenManager, String serverIPReal)
 	{
-		String severIP = "localhost";
-		int serverPort = 443;
-
-		if(screenManager.createAndConnectServer(this.name, serverPort, this.password, screenManager.getUserObject().getNickName()))
-			return true;
+		int serverPort = 1;
+		if(password.length() != 16)
+			return false;
+		if(name.equals(""))
+			return false;
+		
+		if(!(serverIPReal.equals("localhost")))
+		{
+			local = true;
+			screenManager.getUserObject().setHostName(this.name);
+			if(screenManager.createAndConnectServer(serverIPReal, serverPort, this.password, screenManager.getUserObject().getNickName()))
+			{
+				screenManager.getUserObject().setConnected(true);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
 		else
-			return true;
-	}
-	
-	public void disconnect()
-	{
-		//ScreenManager.getUserObject().getClientForServer().disconnect();
+		{
+			String severIP = "localhost";
+			screenManager.getUserObject().setHostName(this.name);
+			if(screenManager.createAndConnectServer(severIP, serverPort, this.password, screenManager.getUserObject().getNickName()))
+			{
+				screenManager.getUserObject().setConnected(true);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
 	}
 	
 	public boolean isLocal()
@@ -32,7 +55,7 @@ public class VirtualChannel extends Channel
 	
 	public boolean isSet()
 	{
-		if((this.name != null) && (this.password != null))
+		if((!(this.name.equals(""))) && (!(this.password.equals(""))))
 			return true;
 		else
 			return false;
@@ -42,12 +65,21 @@ public class VirtualChannel extends Channel
 	{
 		//For default debug purposes
 		if(name.equalsIgnoreCase("") || name.equalsIgnoreCase(" "))
+		{
 			name = "Channel X"; 
-		if(password.equalsIgnoreCase("") || password.equalsIgnoreCase(" "))
-			password = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+			password = "ABCDEFGHIJKLMNOP";
+		}
 		
 		this.name = name;
 		this.password = password;
 	}
+	
+	public void setSaveChannels(String name, String password)
+	{
+		this.name = name;
+		this.password = password;
+	}
+	
+	
 	
 }

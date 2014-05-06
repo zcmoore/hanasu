@@ -93,6 +93,41 @@ public class Channel
 		return true;
 	}
 	
+	private void disconnect()
+	{
+		try
+		{
+			if (objectInputStream != null)
+				objectInputStream.close();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		try
+		{
+			if (objectOutputStream != null)
+				objectOutputStream.close();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		try
+		{
+			if (clientSocket != null)
+				clientSocket.close();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		if (channelGUI != null)
+			channelGUI.connectionFailed();
+		
+	}
+	
 	private void sendChannelRegister(String channelName) throws IOException
 	{
 		Command addToMap = new Command(Commands.CHANNEL);
@@ -191,7 +226,9 @@ public class Channel
 				{
 					displayNonMessage("Server has close the connection: "
 							+ ioException);
+					disconnect();
 					channelGUI.connectionFailed();
+					break;
 				}
 				catch (ClassNotFoundException classNotFoundException)
 				{
@@ -205,6 +242,7 @@ public class Channel
 				}
 				
 			}
+			disconnect();
 		}
 	}
 }

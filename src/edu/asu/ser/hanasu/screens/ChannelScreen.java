@@ -6,6 +6,7 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
@@ -40,7 +41,10 @@ public class ChannelScreen extends Screen
 		this.addComponentListener(new SizeAdapter());
 	}
 	
-	
+	public ScreenManager getScreenManager()
+	{
+		return screenManager;
+	}
 	
 	@Override
 	public void prepareToExit()
@@ -51,8 +55,6 @@ public class ChannelScreen extends Screen
 	@Override
 	public void prepareToEnter()
 	{
-		//if userObject was able to be read
-		//AKA not just created a new one
 		if(screenManager.getUserObject().getStrokesArray() != null)
 		{
 			System.out.println("object strokes not null");
@@ -85,6 +87,11 @@ public class ChannelScreen extends Screen
 	{
 		// TODO Auto-generated method stub
 		throw new NotImplementedException();
+	}
+	
+	public ArrayList<KanaStroke> getKanaStrokes()
+	{
+		return kanaGroup.getStrokeArray();
 	}
 	
 	private class SizeAdapter extends ComponentAdapter

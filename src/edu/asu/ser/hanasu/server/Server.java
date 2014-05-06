@@ -237,6 +237,12 @@ public class Server
 							try
 							{
 								objectOutputStream.writeObject(commandToSend);
+								allClientIDMap.remove(uniqueClientID);
+								if(channelsMap.containsValue(this))
+								{
+									channelsMap.remove(incomingCommand.getReturnedString().toLowerCase());
+									serverGUI.writeToDebugTextArea("Removed: " + incomingCommand.getReturnedString().toLowerCase());
+								}
 							}
 							catch (IOException ioException)
 							{

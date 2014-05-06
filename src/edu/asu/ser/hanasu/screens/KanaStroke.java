@@ -7,13 +7,19 @@ import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 
+import edu.asu.ser.hanasu.screens.SidebarButton.SidebarButtonType;
+
 @SuppressWarnings("serial")
-public class KanaStroke extends JButton
+public class KanaStroke extends JButton 
 {
 	protected boolean highlighted;
 	protected VirtualChannel associatedChannel;
@@ -21,6 +27,7 @@ public class KanaStroke extends JButton
 	private ScreenManager screenManagerReference;
 	double xScaleFactor, yScaleFactor;
 	int parentWidth, parentHeight;
+	private String serverIP = "localhost";
 	
 	public KanaStroke(String strokeHighlightedPath, ScreenManager screenManager)
 	{
@@ -52,31 +59,98 @@ public class KanaStroke extends JButton
 		associatedChannel.setChannel(name, password);
 	}
 	
+	public void setAssociatedChannelSave(String name, String password)
+	{
+		associatedChannel.setSaveChannels(name, password);
+	}
+	
+	public void suStrokeConnect()
+	{
+		String name = "", password = "";
+		
+		name = (String) JOptionPane.showInputDialog("Channel Name: ");
+		
+		if(name != null)
+		{
+		
+			if((name.equals(null)) || (name.equals("")) || (name.equals(" ")))
+			{}
+			else
+			{
+				password = (String) JOptionPane.showInputDialog("Channel Password: ");
+				serverIP = (String) JOptionPane.showInputDialog("Please Input Server IP: ");
+				
+			}
+				
+			
+			setAssociatedChannel(name, password);
+			
+			if(associatedChannel.connect(screenManagerReference, serverIP))
+			{
+				screenManagerReference.transition(screenManagerReference.getChatScreenType());
+			}
+			else
+			{
+				JOptionPane.showMessageDialog(this, "Connection Unsuccessful");
+			}
+		}
+		
+	}
+	
 	public void onLeftMouseClick()
 	{
 		if (associatedChannel.isSet())
 		{
-			associatedChannel.connect(screenManagerReference);
+			if(associatedChannel.connect(screenManagerReference, serverIP))
+			{
+				screenManagerReference.transition(screenManagerReference.getChatScreenType());
+			}
+			else
+			{
+				JOptionPane.showMessageDialog(this, "Connection Unsuccessful");
+			}
 		}
 		else
 		{
 			onRightMouseClick();
 		}
 		
-		System.out.println("Left button");
 	}
 	
 	public void onRightMouseClick()
 	{
-		String name, password;
+		String name = "", password = "";
+		
 		name = (String) JOptionPane.showInputDialog("Channel Name: ");
-		password = (String) JOptionPane.showInputDialog("Channel Password: ");
+		if(name != null)
+		{
 		
-		setAssociatedChannel(name, password);
-		
-		System.out.println("Right button");
+			if((name.equals(null)) || (name.equals("")) || (name.equals(" ")))
+				password = "";
+			else
+			{
+				password = (String) JOptionPane.showInputDialog("Password, Length 128 Bits (16 char): ");
+				if(password.length() != 16)
+				{
+					password = keepAskingForPassword();
+				}
+				serverIP = (String) JOptionPane.showInputDialog("Please Input Server IP: ");
+			}
+			
+			setAssociatedChannel(name, password);
+		}
 	}
 	
+
+	private String keepAskingForPassword()
+	{
+		String password = (String) JOptionPane.showInputDialog("Password, Length 128 Bits (16 char): ");
+		if(password.length() == 16)
+			return password;
+		else
+			return keepAskingForPassword();
+	}
+
 	public void highlight()
 	{
 		// starts drawing highlighted image
@@ -134,5 +208,21 @@ public class KanaStroke extends JButton
 		}
 		repaint();
 	}
+
+	public String getServerIP()
+	{
+		return serverIP;
+	}
+	
+	public void setServerIP(String serverIP)
+	{
+		this.serverIP = serverIP;
+	}
+	
+	public VirtualChannel getAssociatedChannel()
+	{
+		return associatedChannel;
+	}
+	
 	
 }

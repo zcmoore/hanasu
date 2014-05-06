@@ -11,6 +11,7 @@ import javax.swing.*;
 
 import edu.asu.ser.hanasu.server.Command.Commands;
 
+//TODO fix channel disconnect logic
 @SuppressWarnings("serial")
 public class ChannelGUI extends JFrame implements ActionListener
 {
@@ -23,6 +24,7 @@ public class ChannelGUI extends JFrame implements ActionListener
 	private Channel channel;
 	private int defaultPortNumber;
 	private String hostName;
+	private String channelNameVar;
 	boolean connected;
 	
 	public ChannelGUI(String host, int port)
@@ -122,7 +124,9 @@ public class ChannelGUI extends JFrame implements ActionListener
 		{
 			if (o == logout)
 			{
-				channel.sendMessageToServer(new Command(Commands.LOGOUT));
+				Command logoutCommand = new Command(Commands.LOGOUT);
+				logoutCommand.setReturnedString(channelNameVar);
+				channel.sendMessageToServer(logoutCommand);
 				return;
 			}
 		}
@@ -157,6 +161,7 @@ public class ChannelGUI extends JFrame implements ActionListener
 			}
 			
 			// try creating a new Client with GUI
+			channelNameVar = channelName;
 			channel = new Channel(server, port, this, channelName);
 			// test if we can start the Client
 			if (!channel.start())

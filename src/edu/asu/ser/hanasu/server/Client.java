@@ -5,6 +5,10 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import edu.asu.ser.hanasu.encryption.AESBlockType;
+import edu.asu.ser.hanasu.encryption.AESCryptographer;
+import edu.asu.ser.hanasu.encryption.InvalidBlockSizeException;
+import edu.asu.ser.hanasu.screens.ChatScreen;
 import edu.asu.ser.hanasu.server.Command.Commands;
 
 public class Client
@@ -14,18 +18,28 @@ public class Client
 	private SimpleDateFormat simpleDateFormat;
 	private Socket clientSocket;
 	
-	private ClientGUI clientGUI;
+	private ChatScreen clientGUI;
 	
 	private String serverAddress, username;
 	private int portNumber;
+	private AESCryptographer cryptographer;
 	
-	public Client(String server, int port, String username, ClientGUI cg)
+	public Client(String server, int port, String username, ChatScreen cg,
+			byte[] key)
 	{
 		this.serverAddress = server;
 		this.portNumber = port;
 		this.username = username;
 		this.clientGUI = cg;
 		simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+		try
+		{
+			cryptographer = new AESCryptographer(AESBlockType.BIT_128, key);
+		}
+		catch (InvalidBlockSizeException e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	public boolean start()
@@ -67,7 +81,7 @@ public class Client
 		
 		try
 		{
-			sendChannelRequest(clientGUI.getChannelName());
+			sendChannelRequest(clientGUI.getUserObject().getHostName());
 		}
 		catch (IOException ioException)
 		{
@@ -95,7 +109,7 @@ public class Client
 		clientGUI.append(msg + "\n");
 	}
 	
-	boolean sendMessageToServer(Object messageToSend)
+	public boolean sendMessageToServer(Object messageToSend)
 	{
 		try
 		{
@@ -107,11 +121,12 @@ public class Client
 			{
 				// Puts username on message
 				EncryptedMessage unencryptedMessage = (EncryptedMessage) messageToSend;
-				byte[] messageWUserName = (username + ": "
-						+ new String(unencryptedMessage.getMessage()) + "\n")
-						.getBytes("UTF-8");
-				// TODO Encryption call HERE on messageWUserName
-				byte[] encryptedMessage = messageWUserName;
+				
+				byte[] messageWUserName = (username + ": " + new String(
+						unencryptedMessage.getMessage()) + "\n").getBytes("UTF-8");
+				
+				byte[] encryptedMessage = cryptographer
+						.encrypt(messageWUserName);
 				
 				if (unencryptedMessage.getIDOrString() instanceof String)
 				{
@@ -194,16 +209,17 @@ public class Client
 					else if (message instanceof EncryptedMessage)
 					{
 						EncryptedMessage incomingMessage = (EncryptedMessage) message;
-						// TODO decrypt call
-						byte[] unencryptedMessage = incomingMessage
-								.getMessage();
+						
+						byte[] unencryptedMessage = cryptographer.decrypt(
+								incomingMessage.getMessage()).getBytes();
+						
 						clientGUI.append(simpleDateFormat.format(new Date())
 								+ " " + new String(unencryptedMessage));
 					}
 				}
 				catch (IOException ioException)
 				{
-					displayNonMessage("Server has close the connection: "
+					displayNonMessage("Server has closed the connection: "
 							+ ioException);
 					clientGUI.connectionFailed();
 					break;

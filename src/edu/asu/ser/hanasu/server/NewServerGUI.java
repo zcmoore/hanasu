@@ -139,7 +139,7 @@ public class NewServerGUI extends JFrame implements ActionListener,
 	
 	public void writeToDebugTextArea(String string)
 	{
-		debugTextArea.append(string);
+		debugTextArea.append(string + "\n");
 		debugTextArea.setCaretPosition(debugTextArea.getText().length() - 1);
 	}
 	

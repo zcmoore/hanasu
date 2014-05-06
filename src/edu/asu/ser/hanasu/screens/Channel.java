@@ -7,8 +7,8 @@ public abstract class Channel
 	
 	public Channel()
 	{
-		name = null;
-		password = null;
+		name = "";
+		password = "";
 	}
 	
 	public boolean connect()
@@ -20,5 +20,17 @@ public abstract class Channel
 	{
 		
 	}
+
+	public String getName()
+	{
+		return name;
+	}
+
+	public String getPassword()
+	{
+		return password;
+	}
+	
+	
 	
 }

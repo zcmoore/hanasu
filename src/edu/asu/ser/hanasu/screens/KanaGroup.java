@@ -10,6 +10,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import javax.swing.JLayeredPane;
@@ -123,11 +124,26 @@ public class KanaGroup extends JLayeredPane
 			{
 				if(stroke.checkAlphaValue(point.x, point.y))
 				{
-					//TODO change to enum like before
-					if(e.getButton() == MouseEvent.BUTTON1)
-						stroke.onLeftMouseClick();
-					else if(e.getButton() == MouseEvent.BUTTON3)
-						stroke.onRightMouseClick();
+					if(stroke == strokes.get(7))
+					{
+						if(e.getButton() == MouseEvent.BUTTON1)
+						{
+							System.out.println("Su Stroke");
+							stroke.suStrokeConnect();
+						}
+						else if(e.getButton() == MouseEvent.BUTTON3)
+						{
+							stroke.onRightMouseClick();
+						}
+					}
+					else
+					{
+						//TODO change to enum like before
+						if(e.getButton() == MouseEvent.BUTTON1)
+							stroke.onLeftMouseClick();
+						else if(e.getButton() == MouseEvent.BUTTON3)
+							stroke.onRightMouseClick();
+					}
 				
 				}
 			}
