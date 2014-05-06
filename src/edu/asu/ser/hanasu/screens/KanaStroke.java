@@ -28,6 +28,7 @@ public class KanaStroke extends JButton
 	double xScaleFactor, yScaleFactor;
 	int parentWidth, parentHeight;
 	private String serverIP = "localhost";
+	private int serverPort;
 	
 	public KanaStroke(String strokeHighlightedPath, ScreenManager screenManager)
 	{
@@ -51,7 +52,7 @@ public class KanaStroke extends JButton
 		this.setContentAreaFilled(false);
 		this.setFocusPainted(false);
 		this.screenManagerReference = screenManager;
-		
+		this.serverPort = 443;
 	}
 	
 	public void setAssociatedChannel(String name, String password)
@@ -79,13 +80,13 @@ public class KanaStroke extends JButton
 			{
 				password = (String) JOptionPane.showInputDialog("Channel Password: ");
 				serverIP = (String) JOptionPane.showInputDialog("Please Input Server IP: ");
-				
+				serverPort = Integer.parseInt((String) JOptionPane.showInputDialog("Please Input Port Number: "));
 			}
 				
 			
 			setAssociatedChannel(name, password);
 			
-			if(associatedChannel.connect(screenManagerReference, serverIP))
+			if(associatedChannel.connect(screenManagerReference, serverIP, serverPort))
 			{
 				screenManagerReference.transition(screenManagerReference.getChatScreenType());
 			}
@@ -101,7 +102,7 @@ public class KanaStroke extends JButton
 	{
 		if (associatedChannel.isSet())
 		{
-			if(associatedChannel.connect(screenManagerReference, serverIP))
+			if(associatedChannel.connect(screenManagerReference, serverIP, serverPort))
 			{
 				screenManagerReference.transition(screenManagerReference.getChatScreenType());
 			}
@@ -135,6 +136,7 @@ public class KanaStroke extends JButton
 					password = keepAskingForPassword();
 				}
 				serverIP = (String) JOptionPane.showInputDialog("Please Input Server IP: ");
+				serverPort = Integer.parseInt((String) JOptionPane.showInputDialog("Please Input Port Number: "));
 			}
 			
 			setAssociatedChannel(name, password);
@@ -214,11 +216,21 @@ public class KanaStroke extends JButton
 		return serverIP;
 	}
 	
+	public int getServerPort()
+	{
+		return serverPort;
+	}
+	
 	public void setServerIP(String serverIP)
 	{
 		this.serverIP = serverIP;
 	}
-	
+
+	public void setServerPort(int serverPort)
+	{
+		this.serverPort = serverPort;
+	}
+
 	public VirtualChannel getAssociatedChannel()
 	{
 		return associatedChannel;

@@ -10,12 +10,14 @@ public class SaveFile implements Serializable
 	ArrayList<String> channelNames;
 	ArrayList<String> channelPasswords;
 	ArrayList<String> serverIPs;
+	ArrayList<Integer> serverPorts;
 	
 	public SaveFile()
 	{
 		channelNames = new ArrayList<>();
 		channelPasswords = new ArrayList<>();
 		serverIPs = new ArrayList<>();
+		serverPorts = new ArrayList<>();
 	}
 	
 	public String getUserName()
@@ -35,6 +37,16 @@ public class SaveFile implements Serializable
 		return serverIPs;
 	}
 	
+	public ArrayList<Integer> getServerPorts()
+	{
+		return serverPorts;
+	}
+
+	public void setServerPorts(ArrayList<Integer> serverPorts)
+	{
+		this.serverPorts = serverPorts;
+	}
+
 	public void setUserName(String userName)
 	{
 		this.userName = userName;

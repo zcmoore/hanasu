@@ -68,20 +68,24 @@ public class ScreenManager
 				if (getChannelScreen().getKanaStrokes().get(0)
 						.getAssociatedChannel().isSet())
 				{
-					if(getChannelScreen()
+					if (getChannelScreen()
 							.getKanaStrokes()
 							.get(0)
 							.getAssociatedChannel()
 							.connect(
 									getChannelScreen().getScreenManager(),
 									getChannelScreen().getKanaStrokes().get(0)
-											.getServerIP()))
+											.getServerIP(),
+									getChannelScreen().getKanaStrokes().get(0)
+											.getServerPort()))
 					{
 						transition(ScreenType.CHAT);
 					}
 					else
 					{
-						JOptionPane.showMessageDialog(getMainScreen().getParent(), "Connection Unsuccessful. Check Credentials, Or Server?");
+						JOptionPane
+								.showMessageDialog(getMainScreen().getParent(),
+										"Connection Unsuccessful. Check Credentials, Or Server?");
 					}
 					
 				}
@@ -95,20 +99,24 @@ public class ScreenManager
 				if (getChannelScreen().getKanaStrokes().get(1)
 						.getAssociatedChannel().isSet())
 				{
-					if(getChannelScreen()
+					if (getChannelScreen()
 							.getKanaStrokes()
 							.get(1)
 							.getAssociatedChannel()
 							.connect(
 									getChannelScreen().getScreenManager(),
 									getChannelScreen().getKanaStrokes().get(1)
-											.getServerIP()))
+											.getServerIP(),
+									getChannelScreen().getKanaStrokes().get(1)
+											.getServerPort()))
 					{
 						transition(ScreenType.CHAT);
 					}
 					else
 					{
-						JOptionPane.showMessageDialog(getMainScreen().getParent(), "Connection Unsuccessful. Check Credentials, Or Server?");
+						JOptionPane
+								.showMessageDialog(getMainScreen().getParent(),
+										"Connection Unsuccessful. Check Credentials, Or Server?");
 					}
 				}
 				else
@@ -128,13 +136,17 @@ public class ScreenManager
 							.connect(
 									getChannelScreen().getScreenManager(),
 									getChannelScreen().getKanaStrokes().get(2)
-											.getServerIP()))
+											.getServerIP(),
+									getChannelScreen().getKanaStrokes().get(2)
+											.getServerPort()))
 					{
 						transition(ScreenType.CHAT);
 					}
 					else
 					{
-						JOptionPane.showMessageDialog(getMainScreen().getParent(), "Connection Unsuccessful. Check Credentials, Or Server?");
+						JOptionPane
+								.showMessageDialog(getMainScreen().getParent(),
+										"Connection Unsuccessful. Check Credentials, Or Server?");
 					}
 				}
 				else
@@ -438,6 +450,7 @@ public class ScreenManager
 		{
 			tempKana.get(index).setServerIP(
 					loadedSaveFile.getServerIPs().get(index));
+			tempKana.get(index).setServerPort(loadedSaveFile.getServerPorts().get(index));
 			tempKana.get(index).setAssociatedChannelSave(
 					loadedSaveFile.getChannelNames().get(index).trim(),
 					loadedSaveFile.getChannelPasswords().get(index).trim());
@@ -456,11 +469,13 @@ public class ScreenManager
 		ArrayList<String> tempChannelNames = new ArrayList<>(8);
 		ArrayList<String> tempChannelPasswords = new ArrayList<>(8);
 		ArrayList<String> tempServerIPs = new ArrayList<>(8);
+		ArrayList<Integer> tempServerPorts = new ArrayList<>(8);
 		ArrayList<KanaStroke> tempKana = userObjectParam.getStrokesArray();
 		
 		for (int index = 0; index < tempKana.size(); index++)
 		{
 			tempServerIPs.add(index, tempKana.get(index).getServerIP().trim());
+			tempServerPorts.add(index, tempKana.get(index).getServerPort());
 			
 			if (tempKana.get(index).getAssociatedChannel().getName().equals(""))
 			{
@@ -489,6 +504,7 @@ public class ScreenManager
 		loadedSaveFile.setServerIPs(tempServerIPs);
 		loadedSaveFile.setChannelNames(tempChannelNames);
 		loadedSaveFile.setChannelPasswords(tempChannelPasswords);
+		loadedSaveFile.setServerPorts(tempServerPorts);
 		return loadedSaveFile;
 	}
 	

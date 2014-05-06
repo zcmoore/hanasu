@@ -10,9 +10,8 @@ public class VirtualChannel extends Channel
 		local = false;
 	}
 	
-	public boolean connect(ScreenManager screenManager, String serverIPReal)
+	public boolean connect(ScreenManager screenManager, String serverIPReal, int serverPort)
 	{
-		int serverPort = 1;
 		if(password.length() != 16)
 			return false;
 		if(name.equals(""))
