@@ -340,10 +340,10 @@ public class ScreenManager
 	
 	private void createUserObject()
 	{
-		if (new File("src/UserObject.ser").exists())
+		if (new File("UserObject.ser").exists())
 		{
 			try (ObjectInputStream objectInputStream = new ObjectInputStream(
-					new FileInputStream("src/UserObject.ser")))
+					new FileInputStream("UserObject.ser")))
 			{
 				SaveFile userSaveFile = (SaveFile) objectInputStream
 						.readObject();
@@ -373,7 +373,7 @@ public class ScreenManager
 	public void saveUserObject() throws IOException
 	{
 		try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(
-				new FileOutputStream("src/UserObject.ser")))
+				new FileOutputStream("UserObject.ser")))
 		{
 			SaveFile saveFile = populateSaveFile(userObject, new SaveFile());
 			
