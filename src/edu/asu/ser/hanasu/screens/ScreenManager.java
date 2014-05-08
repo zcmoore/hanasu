@@ -21,6 +21,7 @@ import javax.swing.JOptionPane;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import edu.asu.ser.hanasu.SaveFile;
+import edu.asu.ser.hanasu.UserObject;
 import edu.asu.ser.hanasu.screens.components.KanaStroke;
 import edu.asu.ser.hanasu.screens.components.Sidebar;
 import edu.asu.ser.hanasu.screens.components.SidebarButton.SidebarButtonType;
@@ -181,8 +182,6 @@ public class ScreenManager
 		@Override
 		public void actionPerformed(ActionEvent arg0)
 		{
-			// TODO: re-enable
-			
 			exitScreen.prepareToExit();
 			enterScreen.prepareToEnter();
 		}
@@ -344,77 +343,6 @@ public class ScreenManager
 		}
 	}
 	
-	private void createUserObject()
-	{
-		if (new File("UserObject.ser").exists())
-		{
-			try (ObjectInputStream objectInputStream = new ObjectInputStream(
-					new FileInputStream("UserObject.ser")))
-			{
-				SaveFile userSaveFile = (SaveFile) objectInputStream
-						.readObject();
-				
-				userObject = populateUserObject(new UserObject(), userSaveFile);
-				
-			}
-			catch (IOException exception)
-			{
-				System.out.println("IOException: ");
-				userObject = new UserObject();
-				exception.printStackTrace();
-			}
-			catch (ClassNotFoundException exception)
-			{
-				System.out.println("Class not found exception");
-				userObject = new UserObject();
-				// exception.printStackTrace();
-			}
-		}
-		else
-		{
-			userObject = new UserObject();
-		}
-	}
-	
-	public void saveUserObject() throws IOException
-	{
-		try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(
-				new FileOutputStream("UserObject.ser")))
-		{
-			SaveFile saveFile = populateSaveFile(userObject, new SaveFile());
-			
-			objectOutputStream.writeObject(saveFile);
-			
-		}
-		catch (IOException exception)
-		{
-			exception.printStackTrace();
-		}
-	}
-	
-	public boolean createAndConnectServer(String serverName, int port,
-			String theKey, String username)
-	{
-		System.out.println("call to create client!");
-		
-		try
-		{
-			byte[] key;
-			key = theKey.getBytes("UTF-8");
-			setClientForServer(new Client(serverName, port, username,
-					getChatScreen(), key));
-			if (clientForServer.start())
-				return true;
-		}
-		catch (UnsupportedEncodingException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return false;
-	}
-	
 	public ScreenType getChatScreenType()
 	{
 		return ScreenType.CHAT;
@@ -430,11 +358,6 @@ public class ScreenManager
 		this.clientForServer = clientForServer;
 	}
 	
-	public UserObject getUserObject()
-	{
-		return userObject;
-	}
-	
 	public boolean isTransitioning()
 	{
 		return client.isTransitioning();
@@ -444,6 +367,10 @@ public class ScreenManager
 	{
 		return (Screen) client.getCurrentPanel();
 	}
+	
+	// ========================================================================
+	// TODO: Refactor: Move the following to appropriate locations
+	// ========================================================================
 	
 	public UserObject populateUserObject(UserObject userObjectParam,
 			SaveFile loadedSaveFile)
@@ -456,7 +383,8 @@ public class ScreenManager
 		{
 			tempKana.get(index).setServerIP(
 					loadedSaveFile.getServerIPs().get(index));
-			tempKana.get(index).setServerPort(loadedSaveFile.getServerPorts().get(index));
+			tempKana.get(index).setServerPort(
+					loadedSaveFile.getServerPorts().get(index));
 			tempKana.get(index).setAssociatedChannelSave(
 					loadedSaveFile.getChannelNames().get(index).trim(),
 					loadedSaveFile.getChannelPasswords().get(index).trim());
@@ -514,75 +442,82 @@ public class ScreenManager
 		return loadedSaveFile;
 	}
 	
-	public class UserObject
+	private void createUserObject()
 	{
-		private String userNickName;
-		private String channelName;
-		private String channelPassword;
-		private ArrayList<KanaStroke> strokesArray;
-		private boolean isConnected;
-		
-		// TODO add the 3 favorite channels
-		
-		public UserObject()
+		if (new File("UserObject.ser").exists())
 		{
-			userNickName = "nickname";
-			channelName = "Channel X";
-			channelPassword = "ABCDEFGHIJKLMNOP";
-			strokesArray = getChannelScreen().getKanaStrokes();
-			isConnected = false;
-			System.out.println("New userobject created");
+			try (ObjectInputStream objectInputStream = new ObjectInputStream(
+					new FileInputStream("UserObject.ser")))
+			{
+				SaveFile userSaveFile = (SaveFile) objectInputStream
+						.readObject();
+				
+				// TODO: replace with more elegant solution
+				userObject = populateUserObject(new UserObject(
+						getChannelScreen().getKanaStrokes()), userSaveFile);
+				
+			}
+			catch (IOException exception)
+			{
+				// TODO: replace with more elegant solution
+				userObject = new UserObject(getChannelScreen().getKanaStrokes());
+				exception.printStackTrace();
+			}
+			catch (ClassNotFoundException exception)
+			{
+				// TODO: replace with more elegant solution
+				userObject = new UserObject(getChannelScreen().getKanaStrokes());
+				// exception.printStackTrace();
+			}
+		}
+		else
+		{
+			userObject = new UserObject(getChannelScreen().getKanaStrokes());
+		}
+	}
+	
+	public void saveUserObject() throws IOException
+	{
+		try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(
+				new FileOutputStream("UserObject.ser")))
+		{
+			SaveFile saveFile = populateSaveFile(userObject, new SaveFile());
+			
+			objectOutputStream.writeObject(saveFile);
+			
+		}
+		catch (IOException exception)
+		{
+			exception.printStackTrace();
+		}
+	}
+	
+	public boolean createAndConnectServer(String serverName, int port,
+			String theKey, String username)
+	{
+		System.out.println("call to create client!");
+		
+		try
+		{
+			byte[] key;
+			key = theKey.getBytes("UTF-8");
+			setClientForServer(new Client(serverName, port, username,
+					getChatScreen(), key));
+			if (clientForServer.start())
+				return true;
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
-		public String getNickName()
-		{
-			return userNickName;
-		}
-		
-		public String getHostName()
-		{
-			return channelName;
-		}
-		
-		public String getChannelPassword()
-		{
-			return channelPassword;
-		}
-		
-		public ArrayList<KanaStroke> getStrokesArray()
-		{
-			return strokesArray;
-		}
-		
-		public boolean isConnected()
-		{
-			return isConnected;
-		}
-		
-		public void setNickName(String nickName)
-		{
-			this.userNickName = nickName;
-		}
-		
-		public void setHostName(String hostName)
-		{
-			this.channelName = hostName;
-		}
-		
-		public void setChannelPassword(String channelPassword)
-		{
-			this.channelPassword = channelPassword;
-		}
-		
-		public void setStrokesArray(ArrayList<KanaStroke> strokesArray)
-		{
-			this.strokesArray = strokesArray;
-		}
-		
-		public void setConnected(boolean isConnected)
-		{
-			this.isConnected = isConnected;
-		}
+		return false;
+	}
+	
+	public UserObject getUserObject()
+	{
+		return userObject;
 	}
 	
 	private void createCloseListener()
