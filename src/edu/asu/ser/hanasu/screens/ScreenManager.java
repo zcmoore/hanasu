@@ -21,7 +21,9 @@ import javax.swing.JOptionPane;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import edu.asu.ser.hanasu.SaveFile;
-import edu.asu.ser.hanasu.screens.SidebarButton.SidebarButtonType;
+import edu.asu.ser.hanasu.screens.components.KanaStroke;
+import edu.asu.ser.hanasu.screens.components.Sidebar;
+import edu.asu.ser.hanasu.screens.components.SidebarButton.SidebarButtonType;
 import edu.asu.ser.hanasu.server.Client;
 
 public class ScreenManager

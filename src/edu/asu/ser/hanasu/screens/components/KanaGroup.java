@@ -1,4 +1,4 @@
-package edu.asu.ser.hanasu.screens;
+package edu.asu.ser.hanasu.screens.components;
 
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -7,6 +7,8 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 
 import javax.swing.JLayeredPane;
+
+import edu.asu.ser.hanasu.screens.ScreenManager;
 
 
 /*

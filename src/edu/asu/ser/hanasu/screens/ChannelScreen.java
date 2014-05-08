@@ -10,6 +10,9 @@ import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
+import edu.asu.ser.hanasu.screens.components.KanaGroup;
+import edu.asu.ser.hanasu.screens.components.KanaStroke;
+import edu.asu.ser.hanasu.screens.components.Sidebar;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 @SuppressWarnings("serial")

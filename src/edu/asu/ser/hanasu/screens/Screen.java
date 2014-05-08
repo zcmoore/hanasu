@@ -8,6 +8,8 @@ import java.awt.Image;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 
+import edu.asu.ser.hanasu.screens.components.Sidebar;
+
 @SuppressWarnings("serial")
 public abstract class Screen extends ImagePanel implements Managable
 {

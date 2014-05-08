@@ -1,4 +1,4 @@
-package edu.asu.ser.hanasu.screens;
+package edu.asu.ser.hanasu.screens.components;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -10,6 +10,9 @@ import java.io.File;
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
+
+import edu.asu.ser.hanasu.screens.ScreenManager;
+import edu.asu.ser.hanasu.server.VirtualChannel;
 
 @SuppressWarnings("serial")
 public class KanaStroke extends JButton 

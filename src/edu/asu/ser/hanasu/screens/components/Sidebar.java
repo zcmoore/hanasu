@@ -1,4 +1,4 @@
-package edu.asu.ser.hanasu.screens;
+package edu.asu.ser.hanasu.screens.components;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 import javax.swing.JPanel;
 
-import edu.asu.ser.hanasu.screens.SidebarButton.SidebarButtonType;
+import edu.asu.ser.hanasu.screens.components.SidebarButton.SidebarButtonType;
 
 @SuppressWarnings("serial")
 public class Sidebar extends JPanel

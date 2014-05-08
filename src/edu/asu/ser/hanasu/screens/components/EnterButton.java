@@ -1,6 +1,5 @@
-package edu.asu.ser.hanasu.screens;
+package edu.asu.ser.hanasu.screens.components;
 
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -9,35 +8,33 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 
 import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.JTextArea;
+import javax.swing.JButton;
 
 @SuppressWarnings("serial")
-public class ChatMessageField extends JTextArea
+public class EnterButton extends JButton
 {
-	BufferedImage textFieldImage;
+	BufferedImage buttonImage;
 	double xScaleFactor, yScaleFactor;
 	int parentWidth, parentHeight;
 	
-	public ChatMessageField()
+	public EnterButton()
 	{
 		super();
-		
+
 		try
 		{
-			String buttonPath = "src/Images/ChatScreenChatTextEnterEdited.png";
+			String buttonPath = "src/Images/ChatScreenEnterButton.png";
 			Image readImage = ImageIO.read(new File(buttonPath));
-			textFieldImage = (BufferedImage) readImage;
+			buttonImage = (BufferedImage) readImage;
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
 		
-		this.setLineWrap(true);
-		this.setWrapStyleWord(true);
-		this.setBorder(BorderFactory.createEmptyBorder());
-		this.setOpaque(false);
+		this.setBorderPainted(false);
+		this.setContentAreaFilled(false);
+		this.setFocusPainted(false);
 		
 	}
 	
@@ -48,46 +45,39 @@ public class ChatMessageField extends JTextArea
 			if (posX > 0 && posY > 0)
 			{
 				
-				return (textFieldImage.getRGB((int) (posX / xScaleFactor),
+				return (buttonImage.getRGB((int) (posX / xScaleFactor),
 						(int) (posY / yScaleFactor)) & 0xFF000000) != 0;
 			}
-		
 		return false;
-	}
 		
+	}
 	
 	public void setScales(int newWidth, int newHeight)
 	{
-		xScaleFactor = (newWidth / (double) textFieldImage
+		xScaleFactor = (newWidth / (double) buttonImage
 				.getWidth());
-		yScaleFactor = (newHeight / (double) textFieldImage
+		yScaleFactor = (newHeight / (double) buttonImage
 				.getHeight());
 		
 		parentWidth = newWidth;
 		parentHeight = newHeight;
 	}
 	
-	public Dimension getImageDimensions()
-	{
-		return new Dimension(textFieldImage.getWidth(),textFieldImage.getHeight());
-	}
-	
 	@Override
 	protected void paintComponent(Graphics g)
 	{
 		Graphics2D graphics2d = (Graphics2D) g;
-		
-		//super.paintComponent(g);
-		
+
 		graphics2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
 				RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 		
-		graphics2d.drawImage(textFieldImage, 0, 0, parentWidth, parentHeight,
+		graphics2d.drawImage(buttonImage, 0, 0, parentWidth, parentHeight,
 				null);
-		
-		graphics2d.drawString(this.getText(), (int)(0 + (495 * xScaleFactor)), (int)(parentHeight - (180 * yScaleFactor)));
 		
 		repaint();
 			
 	}
+	
+	
+	
 }

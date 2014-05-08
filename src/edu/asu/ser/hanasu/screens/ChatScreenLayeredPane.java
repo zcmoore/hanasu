@@ -9,6 +9,9 @@ import java.io.UnsupportedEncodingException;
 
 import javax.swing.JLayeredPane;
 
+import edu.asu.ser.hanasu.screens.components.ChatMessageField;
+import edu.asu.ser.hanasu.screens.components.EnterButton;
+import edu.asu.ser.hanasu.screens.components.MessagesReceivedBox;
 import edu.asu.ser.hanasu.server.EncryptedMessage;
 
 @SuppressWarnings("serial")

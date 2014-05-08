@@ -1,4 +1,4 @@
-package edu.asu.ser.hanasu.screens;
+package edu.asu.ser.hanasu.screens.components;
 
 import java.awt.Graphics;
 import java.awt.Image;

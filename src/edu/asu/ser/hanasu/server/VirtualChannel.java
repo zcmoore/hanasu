@@ -1,8 +1,12 @@
-package edu.asu.ser.hanasu.screens;
+package edu.asu.ser.hanasu.server;
+
+import edu.asu.ser.hanasu.screens.ScreenManager;
 
 
-public class VirtualChannel extends Channel
+public class VirtualChannel
 {
+    private String name;
+    private String password;
 	private boolean local;
 	
 	public VirtualChannel()
@@ -78,7 +82,15 @@ public class VirtualChannel extends Channel
 		this.name = name;
 		this.password = password;
 	}
-	
-	
-	
+
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public String getPassword()
+    {
+        return password;
+    }
 }
