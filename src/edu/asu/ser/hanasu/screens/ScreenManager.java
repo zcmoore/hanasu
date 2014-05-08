@@ -4,17 +4,14 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,8 +19,7 @@ import java.util.HashMap;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
-
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import edu.asu.ser.hanasu.SaveFile;
 import edu.asu.ser.hanasu.screens.SidebarButton.SidebarButtonType;
 import edu.asu.ser.hanasu.server.Client;
@@ -323,19 +319,27 @@ public class ScreenManager
 	private Image returnScreenBackground(ScreenType screenType)
 			throws IOException
 	{
+		String chatPath = "src/Images/ChatScreenBackground.png";
+		String channelPath = "src/Images/NewChannelScreen.png";
+		String mainPath = "src/Images/MainScreenBackground.png";
+		
 		switch (screenType)
 		{
 			case MAIN:
-				String mainPath = "src/Images/MainScreenBackground.png";
 				return ImageIO.read(new File(mainPath));
 			case CHANNEL:
-				String channelPath = "src/Images/NewChannelScreen.png";
 				return ImageIO.read(new File(channelPath));
 			case CHAT:
-				String chatPath = "src/Images/ChatScreenBackground.png";
 				return ImageIO.read(new File(chatPath));
+			case CHATFAV1:
+				return ImageIO.read(new File(chatPath));
+			case CHATFAV2:
+				return ImageIO.read(new File(chatPath));
+			case CHATFAV3:
+				return ImageIO.read(new File(chatPath));
+			default:
+				throw new NotImplementedException();
 		}
-		return null;
 	}
 	
 	private void createUserObject()
