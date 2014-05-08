@@ -1,9 +1,13 @@
 package edu.asu.ser.hanasu.server;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
 
 import edu.asu.ser.hanasu.server.Command.Commands;
 
@@ -27,7 +31,6 @@ public class Server
 		allClientIDMap = new HashMap<Integer, ClientThread>();
 		channelsMap = new HashMap<String, ClientThread>();
 		simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
-		
 	}
 	
 	public void start()

@@ -1,7 +1,6 @@
 package edu.asu.ser.hanasu.server;
 
-import java.io.*;
-import java.net.InetAddress;
+import java.io.Serializable;
 
 @SuppressWarnings("serial")
 public class EncryptedMessage implements Serializable

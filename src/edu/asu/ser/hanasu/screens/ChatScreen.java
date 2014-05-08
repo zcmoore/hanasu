@@ -11,7 +11,6 @@ import javax.swing.JPanel;
 
 import edu.asu.ser.hanasu.screens.ScreenManager.UserObject;
 import edu.asu.ser.hanasu.server.Command;
-import edu.asu.ser.hanasu.server.EncryptedMessage;
 import edu.asu.ser.hanasu.server.Command.Commands;
 
 //TODO implement time on bottom right hand corner

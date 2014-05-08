@@ -2,9 +2,7 @@ package edu.asu.ser.hanasu.screens;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
@@ -12,6 +10,7 @@ import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.JTextArea;
 
+@SuppressWarnings("serial")
 public class MessagesReceivedBox extends JTextArea
 {
 	BufferedImage transparentBoundsImage;
