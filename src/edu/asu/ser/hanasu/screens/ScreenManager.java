@@ -5,7 +5,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -21,6 +20,7 @@ import javax.swing.JOptionPane;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import edu.asu.ser.hanasu.SaveFile;
+import edu.asu.ser.hanasu.SilentWindowListener;
 import edu.asu.ser.hanasu.UserObject;
 import edu.asu.ser.hanasu.screens.components.KanaStroke;
 import edu.asu.ser.hanasu.screens.components.Sidebar;
@@ -243,7 +243,7 @@ public class ScreenManager
 		
 		client = new ClientContainer(mainScreen);
 		
-		createCloseListener();
+		client.addWindowListener(new ExitListener());
 	}
 	
 	public static ScreenManager createManager()
@@ -476,7 +476,7 @@ public class ScreenManager
 		}
 	}
 	
-	public void saveUserObject() throws IOException
+	public void saveUserObject()
 	{
 		try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(
 				new FileOutputStream("UserObject.ser")))
@@ -493,16 +493,16 @@ public class ScreenManager
 	}
 	
 	public boolean createAndConnectServer(String serverName, int port,
-			String theKey, String username)
+			String key, String username)
 	{
 		System.out.println("call to create client!");
 		
 		try
 		{
-			byte[] key;
-			key = theKey.getBytes("UTF-8");
+			byte[] byteKey;
+			byteKey = key.getBytes("UTF-8");
 			setClientForServer(new Client(serverName, port, username,
-					getChatScreen(), key));
+					getChatScreen(), byteKey));
 			if (clientForServer.start())
 				return true;
 		}
@@ -520,65 +520,12 @@ public class ScreenManager
 		return userObject;
 	}
 	
-	private void createCloseListener()
+	private class ExitListener extends SilentWindowListener
 	{
-		client.addWindowListener(new WindowListener() {
-			
-			@Override
-			public void windowOpened(WindowEvent e)
-			{
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void windowIconified(WindowEvent e)
-			{
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void windowDeiconified(WindowEvent e)
-			{
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void windowDeactivated(WindowEvent e)
-			{
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void windowClosing(WindowEvent e)
-			{
-				try
-				{
-					saveUserObject();
-				}
-				catch (IOException e1)
-				{
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-			
-			@Override
-			public void windowClosed(WindowEvent e)
-			{
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void windowActivated(WindowEvent e)
-			{
-				// TODO Auto-generated method stub
-				
-			}
-		});
+		@Override
+		public void windowClosing(WindowEvent e)
+		{
+			saveUserObject();
+		}
 	}
 }
