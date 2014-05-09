@@ -45,6 +45,8 @@ public class ScreenManager
 		MAIN,
 		CHANNEL,
 		CHAT,
+		
+		// TODO: remove these; "CHAT" should cover these as well
 		CHATFAV1,
 		CHATFAV2,
 		CHATFAV3;
@@ -62,100 +64,45 @@ public class ScreenManager
 		@Override
 		public void actionPerformed(ActionEvent event)
 		{
-			if (destination.equals(ScreenType.CHATFAV1))
+			int strokeNumber;
+			
+			switch (destination)
 			{
-				if (getChannelScreen().getKanaStrokes().get(0)
-						.getAssociatedChannel().isSet())
-				{
-					if (getChannelScreen()
-							.getKanaStrokes()
-							.get(0)
-							.getAssociatedChannel()
-							.connect(
-									getChannelScreen().getScreenManager(),
-									getChannelScreen().getKanaStrokes().get(0)
-											.getServerIP(),
-									getChannelScreen().getKanaStrokes().get(0)
-											.getServerPort()))
-					{
-						transition(ScreenType.CHAT);
-					}
-					else
-					{
-						JOptionPane
-								.showMessageDialog(getMainScreen().getParent(),
-										"Connection Unsuccessful. Check Credentials, Or Server?");
-					}
-					
-				}
-				else
-				{
+				case CHATFAV1:
+					strokeNumber = 0;
+					break;
+				case CHATFAV2:
+					strokeNumber = 1;
+					break;
+				case CHATFAV3:
+					strokeNumber = 2;
+					break;
+				default:
 					transition(ScreenType.CHANNEL);
-				}
+					return;
 			}
-			else if (destination.equals(ScreenType.CHATFAV2))
+			
+			KanaStroke stroke = getChannelScreen().getKanaStrokes().get(
+					strokeNumber);
+			
+			if (stroke.getAssociatedChannel().isSet())
 			{
-				if (getChannelScreen().getKanaStrokes().get(1)
-						.getAssociatedChannel().isSet())
+				if (stroke.getAssociatedChannel().connect(
+						getChannelScreen().getScreenManager(),
+						stroke.getServerIP(), stroke.getServerPort()))
 				{
-					if (getChannelScreen()
-							.getKanaStrokes()
-							.get(1)
-							.getAssociatedChannel()
-							.connect(
-									getChannelScreen().getScreenManager(),
-									getChannelScreen().getKanaStrokes().get(1)
-											.getServerIP(),
-									getChannelScreen().getKanaStrokes().get(1)
-											.getServerPort()))
-					{
-						transition(ScreenType.CHAT);
-					}
-					else
-					{
-						JOptionPane
-								.showMessageDialog(getMainScreen().getParent(),
-										"Connection Unsuccessful. Check Credentials, Or Server?");
-					}
+					transition(ScreenType.CHAT);
 				}
 				else
 				{
-					transition(ScreenType.CHANNEL);
-				}
-			}
-			else if (destination.equals(ScreenType.CHATFAV3))
-			{
-				if (getChannelScreen().getKanaStrokes().get(2)
-						.getAssociatedChannel().isSet())
-				{
-					if (getChannelScreen()
-							.getKanaStrokes()
-							.get(2)
-							.getAssociatedChannel()
-							.connect(
-									getChannelScreen().getScreenManager(),
-									getChannelScreen().getKanaStrokes().get(2)
-											.getServerIP(),
-									getChannelScreen().getKanaStrokes().get(2)
-											.getServerPort()))
-					{
-						transition(ScreenType.CHAT);
-					}
-					else
-					{
-						JOptionPane
-								.showMessageDialog(getMainScreen().getParent(),
-										"Connection Unsuccessful. Check Credentials, Or Server?");
-					}
-				}
-				else
-				{
-					transition(ScreenType.CHANNEL);
+					JOptionPane
+							.showMessageDialog(getMainScreen().getParent(),
+									"Connection Unsuccessful. Check Credentials, Or Server?");
 				}
 			}
 			else
 			{
-				transition(destination);
+				transition(ScreenType.CHANNEL);
 			}
 		}
 	}
@@ -227,6 +174,11 @@ public class ScreenManager
 			screens.put(ScreenType.CHANNEL, channelScreen);
 			screens.put(ScreenType.CHAT, chatScreen);
 			
+			// TODO: remove these, after the CHATFAV group has been removed
+			screens.put(ScreenType.CHATFAV1, chatScreen);
+			screens.put(ScreenType.CHATFAV2, chatScreen);
+			screens.put(ScreenType.CHATFAV3, chatScreen);
+			
 		}
 		catch (IOException ioException)
 		{
@@ -242,7 +194,6 @@ public class ScreenManager
 		chatScreen.setPreferredSize(new Dimension(450, 300));
 		
 		client = new ClientContainer(mainScreen);
-		
 		client.addWindowListener(new ExitListener());
 	}
 	
@@ -366,6 +317,20 @@ public class ScreenManager
 	public Screen getCurrentScreen()
 	{
 		return (Screen) client.getCurrentPanel();
+	}
+	
+	public UserObject getUserObject()
+	{
+		return userObject;
+	}
+	
+	private class ExitListener extends SilentWindowListener
+	{
+		@Override
+		public void windowClosing(WindowEvent e)
+		{
+			saveUserObject();
+		}
 	}
 	
 	// ========================================================================
@@ -508,24 +473,11 @@ public class ScreenManager
 		}
 		catch (UnsupportedEncodingException e)
 		{
-			// TODO Auto-generated catch block
+			// TODO: handle exception
 			e.printStackTrace();
+			throw new Error();
 		}
 		
 		return false;
-	}
-	
-	public UserObject getUserObject()
-	{
-		return userObject;
-	}
-	
-	private class ExitListener extends SilentWindowListener
-	{
-		@Override
-		public void windowClosing(WindowEvent e)
-		{
-			saveUserObject();
-		}
 	}
 }
