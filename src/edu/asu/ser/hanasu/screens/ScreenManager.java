@@ -78,7 +78,7 @@ public class ScreenManager
 					strokeNumber = 2;
 					break;
 				default:
-					transition(ScreenType.CHANNEL);
+					transition(destination);
 					return;
 			}
 			
@@ -158,17 +158,17 @@ public class ScreenManager
 		{
 			Sidebar channelBar = new Sidebar(sidebarListeners);
 			channelScreen = new ChannelScreen(channelBar,
-					returnScreenBackground(ScreenType.CHANNEL), this);
+					loadScreenBackground(ScreenType.CHANNEL), this);
 			
 			createUserObject();
 			
 			Sidebar mainBar = new Sidebar(sidebarListeners);
 			mainScreen = new MainScreen(mainBar,
-					returnScreenBackground(ScreenType.MAIN), this);
+					loadScreenBackground(ScreenType.MAIN), this);
 			
 			Sidebar chatBar = new Sidebar(sidebarListeners);
 			chatScreen = new ChatScreen(chatBar,
-					returnScreenBackground(ScreenType.CHAT), this);
+					loadScreenBackground(ScreenType.CHAT), this);
 			
 			screens.put(ScreenType.MAIN, mainScreen);
 			screens.put(ScreenType.CHANNEL, channelScreen);
@@ -268,7 +268,7 @@ public class ScreenManager
 		this.chatScreen = chatScreen;
 	}
 	
-	private Image returnScreenBackground(ScreenType screenType)
+	private Image loadScreenBackground(ScreenType screenType)
 			throws IOException
 	{
 		String chatPath = "src/Images/ChatScreenBackground.png";
