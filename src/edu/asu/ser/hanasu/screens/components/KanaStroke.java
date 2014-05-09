@@ -15,7 +15,7 @@ import edu.asu.ser.hanasu.screens.ScreenManager;
 import edu.asu.ser.hanasu.server.VirtualChannel;
 
 @SuppressWarnings("serial")
-public class KanaStroke extends JButton 
+public class KanaStroke extends JButton
 {
 	protected boolean highlighted;
 	protected VirtualChannel associatedChannel;
@@ -67,24 +67,27 @@ public class KanaStroke extends JButton
 		
 		name = (String) JOptionPane.showInputDialog("Channel Name: ");
 		
-		if(name != null)
+		if (name != null)
 		{
-		
-			if((name.equals(null)) || (name.equals("")) || (name.equals(" ")))
-			{}
+			
+			if ((name.equals(null)) || (name.equals("")) || (name.equals(" ")))
+			{
+			}
 			else
 			{
 				password = (String) JOptionPane.showInputDialog("Channel Password: ");
-				serverIP = (String) JOptionPane.showInputDialog("Please Input Server IP: ");
-				serverPort = Integer.parseInt((String) JOptionPane.showInputDialog("Please Input Port Number: "));
+				serverIP = (String) JOptionPane
+						.showInputDialog("Please Input Server IP: ");
+				serverPort = Integer.parseInt((String) JOptionPane
+						.showInputDialog("Please Input Port Number: "));
 			}
-				
 			
 			setAssociatedChannel(name, password);
 			
-			if(associatedChannel.connect(screenManagerReference, serverIP, serverPort))
+			if (associatedChannel.connect(screenManagerReference, serverIP, serverPort))
 			{
-				screenManagerReference.transition(screenManagerReference.getChatScreenType());
+				screenManagerReference.transition(screenManagerReference
+						.getChatScreenType());
 			}
 			else
 			{
@@ -98,9 +101,10 @@ public class KanaStroke extends JButton
 	{
 		if (associatedChannel.isSet())
 		{
-			if(associatedChannel.connect(screenManagerReference, serverIP, serverPort))
+			if (associatedChannel.connect(screenManagerReference, serverIP, serverPort))
 			{
-				screenManagerReference.transition(screenManagerReference.getChatScreenType());
+				screenManagerReference.transition(screenManagerReference
+						.getChatScreenType());
 			}
 			else
 			{
@@ -119,48 +123,51 @@ public class KanaStroke extends JButton
 		String name = "", password = "";
 		
 		name = (String) JOptionPane.showInputDialog("Channel Name: ");
-		if(name != null)
+		if (name != null)
 		{
-		
-			if((name.equals(null)) || (name.equals("")) || (name.equals(" ")))
+			
+			if ((name.equals(null)) || (name.equals("")) || (name.equals(" ")))
 				password = "";
 			else
 			{
-				password = (String) JOptionPane.showInputDialog("Password, Length 128 Bits (16 char): ");
-				if(password.length() != 16)
+				password = (String) JOptionPane
+						.showInputDialog("Password, Length 128 Bits (16 char): ");
+				if (password.length() != 16)
 				{
 					password = keepAskingForPassword();
 				}
-				serverIP = (String) JOptionPane.showInputDialog("Please Input Server IP: ");
-				serverPort = Integer.parseInt((String) JOptionPane.showInputDialog("Please Input Port Number: "));
+				serverIP = (String) JOptionPane
+						.showInputDialog("Please Input Server IP: ");
+				serverPort = Integer.parseInt((String) JOptionPane
+						.showInputDialog("Please Input Port Number: "));
 			}
 			
 			setAssociatedChannel(name, password);
 		}
 	}
 	
-
 	private String keepAskingForPassword()
 	{
-		String password = (String) JOptionPane.showInputDialog("Password, Length 128 Bits (16 char): ");
-		if(password.length() == 16)
+		String password = (String) JOptionPane
+				.showInputDialog("Password, Length 128 Bits (16 char): ");
+		if (password.length() == 16)
 			return password;
 		else
 			return keepAskingForPassword();
 	}
-
+	
 	public void highlight()
 	{
 		// starts drawing highlighted image
 		this.highlighted = true;
-		//repaint();
+		// repaint();
 	}
 	
 	public void dehighlight()
 	{
 		// stop drawing highlighted stroke
 		this.highlighted = false;
-		//repaint();
+		// repaint();
 	}
 	
 	public boolean isHighlighted()
@@ -170,8 +177,7 @@ public class KanaStroke extends JButton
 	
 	public boolean checkAlphaValue(int posX, int posY)
 	{
-		if (posX < parentWidth
-				&& posY < parentHeight)
+		if (posX < parentWidth && posY < parentHeight)
 			if (posX > 0 && posY > 0)
 				return (imageWTransparency.getRGB((int) (posX / xScaleFactor),
 						(int) (posY / yScaleFactor)) & 0xFF000000) == 0xFF000000;
@@ -181,10 +187,8 @@ public class KanaStroke extends JButton
 	
 	public void setScales(int newWidth, int newHeight)
 	{
-		xScaleFactor = (newWidth / (double) imageWTransparency
-				.getWidth());
-		yScaleFactor = (newHeight / (double) imageWTransparency
-				.getHeight());
+		xScaleFactor = (newWidth / (double) imageWTransparency.getWidth());
+		yScaleFactor = (newHeight / (double) imageWTransparency.getHeight());
 		
 		parentWidth = newWidth;
 		parentHeight = newHeight;
@@ -197,7 +201,7 @@ public class KanaStroke extends JButton
 		if (isHighlighted())
 		{
 			Graphics2D graphics2d = (Graphics2D) g;
-
+			
 			graphics2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
 					RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 			graphics2d.drawImage(imageWTransparency, 0, 0, parentWidth, parentHeight,
@@ -206,7 +210,7 @@ public class KanaStroke extends JButton
 		}
 		repaint();
 	}
-
+	
 	public String getServerIP()
 	{
 		return serverIP;
@@ -221,16 +225,15 @@ public class KanaStroke extends JButton
 	{
 		this.serverIP = serverIP;
 	}
-
+	
 	public void setServerPort(int serverPort)
 	{
 		this.serverPort = serverPort;
 	}
-
+	
 	public VirtualChannel getAssociatedChannel()
 	{
 		return associatedChannel;
 	}
-	
 	
 }

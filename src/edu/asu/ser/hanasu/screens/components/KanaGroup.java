@@ -153,22 +153,25 @@ public class KanaGroup extends JLayeredPane
 	private class KanaMouseMotionListener implements MouseMotionListener
 	{
 		@Override
-		public void mouseMoved(MouseEvent arg0)
+		public void mouseMoved(MouseEvent mouse)
 		{
-			Point point = arg0.getPoint();
+			Point point = mouse.getPoint();
 			for(KanaStroke stroke : strokes)
 			{
 				if(stroke.checkAlphaValue(point.x, point.y))
 				{
 					stroke.highlight();
+					break;
 				}
 				else
+				{
 					stroke.dehighlight();
+				}
 			}
 		}
-		
+
 		@Override
-		public void mouseDragged(MouseEvent arg0)
+		public void mouseDragged(MouseEvent e)
 		{
 		}
 	}
