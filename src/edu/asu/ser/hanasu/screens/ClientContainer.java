@@ -82,11 +82,11 @@ public class ClientContainer extends JFrame implements Singleton, Layered
 			
 			public TransitionTimerListener()
 			{
-				position = new NewtonianBehaviour(1280, -25, 0.27);
+				position = new NewtonianBehaviour(1280, -50, 1);
 				position.setMaxVelocity(-1);
 				position.setMinValue(0);
 				
-				luminosity = new NewtonianBehaviour(0, 0.01, 0);
+				luminosity = new NewtonianBehaviour(0, 0.02, 0);
 				luminosity.setMaxValue(1.0);
 				luminosity.setMinVelocity(0.01);
 				System.out.println(position);

@@ -8,9 +8,9 @@ import javax.swing.JPanel;
 // TODO: add component transparency support
 // TODO: add image support
 /**
- * Panel to serve as a semi-transparent overlay. As of version 0.1, only solid
- * colours are supported. The opacity of components that are added to a panel of
- * this type are not controlled or guaranteed by this class.
+ * Panel to serve as a semi-transparent overlay. As of version 0.1, only solid colours are
+ * supported. The opacity of components that are added to a panel of this type are not
+ * controlled or guaranteed by this class.
  * 
  * @author Moore, Zachary
  * @version 0.1
@@ -19,8 +19,8 @@ import javax.swing.JPanel;
 public class AlphaPane extends JPanel
 {
 	/**
-	 * Constructor. Sets the background colour (i.e. overlay colour) of this
-	 * panel to the specified colour. The default alpha value is 1.
+	 * Constructor. Sets the background colour (i.e. overlay colour) of this panel to the
+	 * specified colour. The default alpha value is 1.
 	 * 
 	 * @param colour
 	 */
@@ -46,8 +46,8 @@ public class AlphaPane extends JPanel
 	}
 	
 	/**
-	 * Override to set the alpha value to either 1 or 0. This panel's isOpaque
-	 * value will always remain false, so to not show the actual panel. As such,
+	 * Override to set the alpha value to either 1 or 0. This panel's isOpaque value will
+	 * always remain false, so to not show the actual panel. As such,
 	 * javax.swing.JComponent#setOpaque(boolean) is not invoked.
 	 * 
 	 * @see javax.swing.JComponent#setOpaque(boolean)
@@ -62,9 +62,9 @@ public class AlphaPane extends JPanel
 	}
 	
 	/*
-	 * (non-Javadoc) Paints this component using the protocol specified by
-	 * JPanel, and then paints a transparent overlay that corresponds to this
-	 * panels background colour.
+	 * (non-Javadoc) Paints this component using the protocol specified by JPanel, and
+	 * then paints a transparent overlay that corresponds to this panels background
+	 * colour.
 	 * 
 	 * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
 	 */
@@ -80,9 +80,8 @@ public class AlphaPane extends JPanel
 	/**
 	 * Sets the alpha value for this panel.
 	 * 
-	 * Note: as of version 0.1, the specified alpha will only affect the
-	 * background colour of this panel. Any components within this container
-	 * will not be affected.
+	 * Note: as of version 0.1, the specified alpha will only affect the background colour
+	 * of this panel. Any components within this container will not be affected.
 	 * 
 	 * @param alpha
 	 */
@@ -100,10 +99,12 @@ public class AlphaPane extends JPanel
 		}
 		catch (NullPointerException | IllegalArgumentException e)
 		{
-			e.printStackTrace();
+			String message = "AlphaPane caught expected exception in setAlpha(): "
+					+ e.getClass();
+			System.err.println(message);
 		}
 	}
-
+	
 	/**
 	 * Equivalent to {@link #setAlpha(float)}
 	 * 
